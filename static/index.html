@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MultiVIT SR — Attention Inspector</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+:root {
+  --bg0: #080b10;
+  --bg1: #0d1117;
+  --bg2: #131921;
+  --bg3: #1a2233;
+  --line: #1f2d42;
+  --line2: #263347;
+  --teal: #00d4aa;
+  --teal2: #00a882;
+  --blue: #4da6ff;
+  --amber: #f0b429;
+  --red: #ff5f57;
+  --purple: #b48eff;
+  --text0: #e8edf5;
+  --text1: #8fa3bf;
+  --text2: #4a6080;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'IBM Plex Sans JP', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  background: var(--bg0);
+  color: var(--text0);
+  font-family: var(--sans);
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+/* ── TOPBAR ── */
+#topbar {
+  height: 48px;
+  background: var(--bg1);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-shrink: 0;
+  padding: 0;
+  position: relative;
+  z-index: 50;
+}
+.tb-logo {
+  width: 48px; height: 48px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--teal);
+  font-family: var(--mono); font-size: 13px; font-weight: 600;
+  color: var(--bg0);
+  letter-spacing: -.02em;
+  flex-shrink: 0;
+}
+.tb-title {
+  padding: 0 20px;
+  font-family: var(--mono); font-size: 12px;
+  color: var(--text1); letter-spacing: .08em;
+  border-right: 1px solid var(--line);
+  height: 100%; display: flex; align-items: center;
+}
+.tb-title strong { color: var(--text0); margin-right: 6px; }
+.tb-tabs {
+  display: flex; height: 100%;
+  border-right: 1px solid var(--line);
+}
+.tb-tab {
+  height: 100%; padding: 0 18px;
+  display: flex; align-items: center; gap: 7px;
+  font-family: var(--mono); font-size: 11px; letter-spacing: .04em;
+  color: var(--text2); cursor: pointer; border: none; background: none;
+  border-bottom: 2px solid transparent;
+  transition: color .15s, border-color .15s, background .15s;
+  white-space: nowrap;
+}
+.tb-tab:hover { color: var(--text1); background: rgba(255,255,255,.03); }
+.tb-tab.active { color: var(--teal); border-bottom-color: var(--teal); background: rgba(0,212,170,.05); }
+.tb-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--text2); flex-shrink: 0;
+  transition: background .15s;
+}
+.tb-tab.active .tb-dot { background: var(--teal); box-shadow: 0 0 6px var(--teal); }
+.tb-right {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 12px;
+  padding: 0 16px;
+}
+#statusChip {
+  font-family: var(--mono); font-size: 10px;
+  padding: 4px 10px; border-radius: 20px;
+  border: 1px solid var(--line2);
+  display: flex; align-items: center; gap: 6px;
+  transition: all .3s;
+}
+#statusChip .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text2); }
+#statusChip.ready { border-color: var(--teal); color: var(--teal); }
+#statusChip.ready .dot { background: var(--teal); box-shadow: 0 0 6px var(--teal); }
+#statusChip.busy { border-color: var(--amber); color: var(--amber); }
+#statusChip.busy .dot { background: var(--amber); animation: blink 1s infinite; }
+#statusChip.error { border-color: var(--red); color: var(--red); }
+#statusChip.error .dot { background: var(--red); }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+/* ── MAIN LAYOUT ── */
+#workspace {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+/* ── LEFT SIDEBAR ── */
+#sidebar {
+  width: 300px;
+  min-width: 300px;
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg1);
+}
+.sb-section {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.sb-label {
+  font-family: var(--mono); font-size: 9px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--text2); margin-bottom: 10px;
+}
+.upload-drop {
+  border: 1px dashed var(--line2);
+  border-radius: 6px; padding: 14px 12px;
+  text-align: center; cursor: pointer;
+  position: relative; transition: all .2s;
+}
+.upload-drop:hover, .upload-drop.over {
+  border-color: var(--teal); background: rgba(0,212,170,.04);
+}
+.upload-drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.upload-drop p { font-size: 11px; color: var(--text2); margin-top: 4px; }
+.upload-drop strong { font-size: 12px; color: var(--text1); }
+#prevWrap {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+  display: none;
+}
+#prevImg {
+  width: 48px; height: 48px; object-fit: cover;
+  border-radius: 4px; border: 1px solid var(--line2);
+}
+#prevMeta { font-family: var(--mono); font-size: 10px; color: var(--text1); }
+#btnRun {
+  width: 100%; margin-top: 10px;
+  height: 36px; border-radius: 5px;
+  background: var(--teal); color: var(--bg0);
+  font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: .06em;
+  border: none; cursor: pointer; transition: all .2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+#btnRun:hover:not(:disabled) { background: var(--teal2); }
+#btnRun:disabled { opacity: .35; cursor: not-allowed; }
+.ent-legend {
+  display: flex; gap: 8px; align-items: center;
+}
+.ent-bar {
+  flex: 1; height: 8px; border-radius: 3px;
+  background: linear-gradient(to right, #ff4757, #ffa502, #2ed573);
+}
+.ent-labels {
+  display: flex; justify-content: space-between;
+  font-family: var(--mono); font-size: 9px; color: var(--text2);
+  margin-top: 4px;
+}
+#treeWrap { flex: 1; overflow-y: auto; padding: 8px; }
+.tree-empty {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; height: 160px; gap: 8px;
+  color: var(--text2); font-size: 12px; text-align: center;
+}
+.tree-layer { margin-bottom: 2px; }
+.tree-row {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 8px; border-radius: 5px; cursor: pointer;
+  transition: background .12s; user-select: none;
+}
+.tree-row:hover { background: rgba(255,255,255,.04); }
+.tree-row.active { background: rgba(0,212,170,.1); outline: 1px solid rgba(0,212,170,.2); }
+.tree-arrow {
+  font-size: 9px; color: var(--text2); width: 12px; flex-shrink: 0;
+  transition: transform .18s;
+}
+.tree-arrow.open { transform: rotate(90deg); }
+.tree-badge {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+}
+.tree-lbl { font-family: var(--mono); font-size: 11px; flex: 1; color: var(--text0); }
+.tree-val {
+  font-family: var(--mono); font-size: 9px; color: var(--text2);
+  background: var(--bg3); padding: 2px 5px; border-radius: 3px;
+}
+.tree-children { display: none; padding-left: 14px; }
+.tree-children.open { display: block; }
+.patch-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 2px; padding: 6px 6px 6px 20px;
+}
+.patch-cell {
+  aspect-ratio: 1; border-radius: 2px; cursor: pointer;
+  transition: transform .12s, box-shadow .12s;
+  position: relative;
+}
+.patch-cell:hover { transform: scale(1.18); z-index: 5; }
+.patch-cell.sel {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--teal);
+  z-index: 6;
+}
+/* ── LOG ── */
+#logBar {
+  border-top: 1px solid var(--line);
+  height: 80px; overflow-y: auto; padding: 6px 12px;
+  flex-shrink: 0;
+}
+.log-line { font-family: var(--mono); font-size: 10px; line-height: 1.7; color: var(--text2); }
+.log-ok { color: var(--teal); }
+.log-err { color: var(--red); }
+.log-warn { color: var(--amber); }
+/* ── CONTENT AREA ── */
+#content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.panel {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+}
+.panel.active { display: flex; }
+/* ─ Heatmap panel ─ */
+#panelHeatmap {
+  display: flex;
+  flex-direction: column;
+}
+#hmHeader {
+  padding: 12px 20px; border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+}
+#hmTitle { font-family: var(--mono); font-size: 12px; color: var(--text1); }
+#hmBadges { display: flex; gap: 6px; margin-left: auto; }
+.badge {
+  font-family: var(--mono); font-size: 10px;
+  padding: 3px 9px; border-radius: 12px;
+  background: var(--bg3); border: 1px solid var(--line2);
+  color: var(--blue);
+}
+#hmBody {
+  flex: 1; overflow: auto; display: flex;
+  align-items: flex-start; justify-content: center;
+  padding: 32px 24px;
+}
+.hm-empty {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 14px; color: var(--text2); text-align: center;
+  padding-top: 60px;
+}
+.hm-empty .icon { font-size: 42px; opacity: .2; }
+.hm-empty h3 { font-size: 15px; color: var(--text1); font-weight: 400; }
+.hm-empty p { font-size: 11px; line-height: 1.7; }
+#hmImg { max-width: 100%; max-height: calc(100vh - 160px); border-radius: 6px; }
+/* ─ Analysis panel ─ */
+#panelAnalysis {
+  display: flex;
+  flex-direction: column;
+    overflow: hidden;
+}
+#anaHeader {
+  padding: 12px 20px; border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+}
+#anaTitle { font-family: var(--mono); font-size: 12px; color: var(--text1); }
+.ana-controls { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+.ana-btn {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .04em;
+  padding: 5px 12px; border-radius: 4px;
+  background: var(--bg3); border: 1px solid var(--line2);
+  color: var(--text1); cursor: pointer; transition: all .15s;
+  white-space: nowrap;
+}
+.ana-btn:hover { border-color: var(--teal); color: var(--teal); }
+.ana-btn.loading { opacity: .5; cursor: wait; }
+.ana-btn.loaded { border-color: var(--teal); color: var(--teal); background: rgba(0,212,170,.07); }
+
+/* ★ 修复滚动：添加 min-height: 0 让 flex 子元素可以收缩，并设置 overflow-y: auto */
+#anaGrid {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(560px, 1fr));
+  gap: 16px;
+  align-content: start;
+  min-height: 0;   /* 关键属性 */
+}
+.ana-card {
+  background: var(--bg2); border: 1px solid var(--line);
+  border-radius: 8px; overflow: hidden;
+}
+.ana-card-head {
+  padding: 10px 14px; border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; gap: 8px;
+}
+.ana-card-head span {
+  font-family: var(--mono); font-size: 10px; color: var(--text1);
+}
+.ana-card-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.ana-card-body { padding: 12px; position: relative; }
+.ana-card-body .chart-container { width: 100%; height: 420px; }
+.ana-empty {
+  height: 120px; display: flex; align-items: center; justify-content: center;
+  color: var(--text2); font-size: 12px;
+}
+/* ─ Info panel ─ */
+#panelInfo {
+  overflow-y: auto;
+  padding: 32px 40px;
+  max-width: 900px; margin: 0 auto; width: 100%;
+}
+.info-h1 { font-family: var(--mono); font-size: 22px; color: var(--text0); margin-bottom: 6px; }
+.info-h1 span { color: var(--teal); }
+.info-sub { color: var(--text2); font-size: 12px; margin-bottom: 32px; }
+.info-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px; margin-bottom: 32px;
+}
+.info-card {
+  background: var(--bg2); border: 1px solid var(--line);
+  border-radius: 8px; padding: 16px;
+}
+.info-card .label { font-size: 11px; color: var(--text2); margin-bottom: 6px; }
+.info-card .val { font-family: var(--mono); font-size: 20px; color: var(--teal); }
+.info-card .val.secondary { color: var(--blue); }
+.info-card .val.tertiary { color: var(--purple); }
+.info-routes { display: flex; flex-direction: column; gap: 8px; }
+.route-row {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--bg2); border: 1px solid var(--line);
+  border-radius: 6px; padding: 10px 14px;
+}
+.route-method {
+  font-family: var(--mono); font-size: 10px;
+  padding: 2px 8px; border-radius: 3px;
+  background: rgba(0,212,170,.15); color: var(--teal);
+  flex-shrink: 0;
+}
+.route-path { font-family: var(--mono); font-size: 11px; color: var(--blue); flex-shrink: 0; }
+.route-desc { font-size: 11px; color: var(--text1); }
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #2a3a50; }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR 完全不变 -->
+<div id="topbar">
+  <div class="tb-logo">SR</div>
+  <div class="tb-title"><strong>MultiVIT SR</strong> Attention Inspector</div>
+  <div class="tb-tabs">
+    <button class="tb-tab active" data-panel="panelHeatmap" onclick="switchTab(this)">
+      <span class="tb-dot"></span> 热力图
+    </button>
+    <button class="tb-tab" data-panel="panelAnalysis" onclick="switchTab(this)">
+      <span class="tb-dot"></span> 分析图表
+    </button>
+    <button class="tb-tab" data-panel="panelInfo" onclick="switchTab(this)">
+      <span class="tb-dot"></span> 模型概览
+    </button>
+  </div>
+  <div class="tb-right">
+    <div id="statusChip">
+      <span class="dot"></span>
+      <span id="statusTxt">待机</span>
+    </div>
+  </div>
+</div>
+
+<div id="workspace">
+  <!-- SIDEBAR 完全不变 -->
+  <div id="sidebar">
+    <div class="sb-section">
+      <div class="sb-label">输入图像</div>
+      <div class="upload-drop" id="dropZone">
+        <input type="file" id="fileInput" accept="image/*"/>
+        <div id="prevWrap"><img id="prevImg" alt="preview"/><div id="prevMeta"></div></div>
+        <strong>点击或拖放图像</strong><p>PNG / JPG / BMP</p>
+      </div>
+      <button id="btnRun" disabled>
+        <span id="runSpinWrap" style="display:none"><span class="spinner" style="width:12px;height:12px;border-width:1.5px"></span></span>
+        <span id="runTxt">▶ RUN MODEL</span>
+      </button>
+    </div>
+    <div class="sb-section">
+      <div class="sb-label">颜色图例 — 行熵（重要性）</div>
+      <div class="ent-bar"></div>
+      <div class="ent-labels"><span>低熵 = 高重要性</span><span>高熵 = 低重要性</span></div>
+    </div>
+    <div id="treeWrap">
+      <div class="tree-empty" id="treeEmpty">
+        <div style="font-size:32px;opacity:.25">◎</div>
+        <div>运行模型后<br>显示注意力树</div>
+      </div>
+      <div id="treeRoot"></div>
+    </div>
+    <div id="logBar"><div class="log-line log-warn">⌁ 等待操作…</div></div>
+  </div>
+
+  <!-- CONTENT PANELS -->
+  <div id="content">
+    <!-- Heatmap 不变 -->
+    <div class="panel active" id="panelHeatmap">
+      <div id="hmHeader">
+        <div id="hmTitle">Attention Heatmap</div>
+        <div id="hmBadges"><span class="badge" id="bmL">Layer —</span><span class="badge" id="bmH">Head —</span><span class="badge" id="bmP">Patch —</span></div>
+      </div>
+      <div id="hmBody">
+        <div class="hm-empty">
+          <div class="icon">⌘</div>
+          <h3>选择 Patch 查看注意力热力图</h3>
+          <p>1. 上传图像并点击 RUN MODEL<br>2. 展开左侧树节点<br>3. 点击任意 Patch 格子</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analysis panel 不变（仅滚动修复） -->
+    <div class="panel" id="panelAnalysis">
+      <div id="anaHeader">
+        <div id="anaTitle">分析图表</div>
+        <div class="ana-controls">
+          <button class="ana-btn" data-key="kl"   onclick="loadAna(this)">KL / 局部性</button>
+          <button class="ana-btn" data-key="fn"   onclick="loadAna(this)">漏斗图</button>
+          <button class="ana-btn" data-key="db"   onclick="loadAna(this)">退化柱状</button>
+          <button class="ana-btn" data-key="3d"   onclick="loadAna(this)">3D 指标</button>
+          <button class="ana-btn" data-key="ls"   onclick="loadAna(this)">层间相似度</button>
+          <button class="ana-btn" data-key="hs"   onclick="loadAna(this)">头间相似度</button>
+          <button class="ana-btn" data-key="ps"   onclick="loadAna(this)">Patch 分析</button>
+          <button class="ana-btn" data-key="as"   onclick="loadAna(this)">高级统计</button>
+          <button class="ana-btn" data-key="hw"   onclick="loadAna(this)">Wasserstein</button>
+          <button class="ana-btn" id="btnLoadAll" onclick="loadAllAna()">全部加载</button>
+        </div>
+      </div>
+      <div id="anaGrid">
+        <div class="ana-empty">点击上方按钮加载分析图表，或“全部加载”一次获取所有结果</div>
+      </div>
+    </div>
+
+    <!-- Info 不变 -->
+    <div class="panel" id="panelInfo">
+      <div class="info-h1">MultiVIT SR <span>Attention Inspector</span></div>
+      <div class="info-sub">图像超分辨率 Transformer 注意力分析工具 — 运行模型后查看各层各头的注意力分布</div>
+      <div class="info-grid" id="infoCards">
+        <div class="info-card"><div class="label">输入分辨率</div><div class="val">64 × 64</div></div>
+        <div class="info-card"><div class="label">放大倍数</div><div class="val secondary">× 4</div></div>
+        <div class="info-card"><div class="label">Patch 尺寸</div><div class="val tertiary">2 × 2</div></div>
+        <div class="info-card" id="cardLayers"><div class="label">检测到的层数</div><div class="val">—</div></div>
+        <div class="info-card" id="cardHeads"><div class="label">每层注意力头</div><div class="val secondary">—</div></div>
+        <div class="info-card" id="cardPatches"><div class="label">Patch 总数</div><div class="val tertiary">—</div></div>
+      </div>
+      <div class="sb-label" style="margin-bottom:12px">API 路由</div>
+      <div class="info-routes">
+        <div class="route-row"><span class="route-method">POST</span><span class="route-path">/run</span><span class="route-desc">上传图像并运行超分模型</span></div>
+        <div class="route-row"><span class="route-method">GET</span><span class="route-path">/visualize</span><span class="route-desc">注意力热力图（layer_id, head_id, patch_id）</span></div>
+        <div class="route-row"><span class="route-method">GET</span><span class="route-path">/tree_stats</span><span class="route-desc">层 / 头 / Patch 树形统计数据</span></div>
+        <div class="route-row"><span class="route-method">GET</span><span class="route-path">/analysis/kl_locality</span><span class="route-desc">KL散度与局部性得分折线图</span></div>
+        <div class="route-row"><span class="route-method">GET</span><span class="route-path">/analysis/funnel</span><span class="route-desc">有效秩与主导奇异值漏斗图</span></div>
+        <div class="route-row"><span class="route-method">GET</span><span class="route-path">/analysis/degrade_bar</span><span class="route-desc">多维退化指标柱状对比图</span></div>
+        <div class="route-row"><span class="route-method">GET</span><span class="route-path">/analysis/3d_bar</span><span class="route-desc">退化指标 3D 柱状图</span></div>
+        <div class="route-row"><span class="route-method">GET</span><span class="route-path">/analysis/layer_similarity</span><span class="route-desc">层间相似度矩阵（5种度量）</span></div>
+        <div class="route-row"><span class="route-method">GET</span><span class="route-path">/analysis/head_similarity</span><span class="route-desc">头间相似度矩阵（逐层）</span></div>
+        <div class="route-row"><span class="route-method">GET</span><span class="route-path">/analysis/patch_similarity</span><span class="route-desc">Patch级余弦相似度与空间分析</span></div>
+        <div class="route-row"><span class="route-method">GET</span><span class="route-path">/analysis/advanced_stats</span><span class="route-desc">高级统计：有效秩、CKA流、PCA</span></div>
+        <div class="route-row"><span class="route-method">GET</span><span class="route-path">/analysis/head_wasserstein</span><span class="route-desc">头间 Wasserstein 距离矩阵</span></div>
+        <div class="route-row"><span class="route-method">GET</span><span class="route-path">/analysis/all</span><span class="route-desc">一次性获取所有分析结果（JSON）</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── 以下 JavaScript 完全不变（与上一版 ECharts 渲染代码相同） ──
+let treeData = null;
+let sel = null;
+const anaCache = {};
+
+function setStatus(cls, txt) {
+  const chip = document.getElementById('statusChip');
+  chip.className = cls;
+  document.getElementById('statusTxt').textContent = txt;
+}
+function log(msg, type = '') {
+  const bar = document.getElementById('logBar');
+  const d = document.createElement('div');
+  d.className = 'log-line' + (type ? ' log-' + type : '');
+  const t = new Date().toLocaleTimeString('zh-CN', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  d.textContent = t + '  ' + msg;
+  bar.appendChild(d);
+  bar.scrollTop = bar.scrollHeight;
+}
+function switchTab(btn) {
+  document.querySelectorAll('.tb-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(btn.dataset.panel).classList.add('active');
+}
+
+const fileInput = document.getElementById('fileInput');
+const dropZone  = document.getElementById('dropZone');
+const btnRun    = document.getElementById('btnRun');
+
+fileInput.addEventListener('change', () => {
+  const f = fileInput.files[0];
+  if (!f) return;
+  const url = URL.createObjectURL(f);
+  document.getElementById('prevImg').src = url;
+  document.getElementById('prevWrap').style.display = 'flex';
+  document.getElementById('prevMeta').innerHTML = '<div>' + f.name + '</div><div style="color:var(--text2)">' + (f.size/1024).toFixed(1) + ' KB</div>';
+  document.querySelector('.upload-drop strong').textContent = '已选择图像';
+  document.querySelector('.upload-drop p').textContent = '点击重新选择';
+  btnRun.disabled = false;
+  log('已选择: ' + f.name);
+});
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('over');
+  const f = e.dataTransfer.files[0];
+  if (f && f.type.startsWith('image/')) {
+    const dt = new DataTransfer(); dt.items.add(f);
+    fileInput.files = dt.files; fileInput.dispatchEvent(new Event('change'));
+  }
+});
+btnRun.addEventListener('click', async () => {
+  if (!fileInput.files[0]) return;
+  btnRun.disabled = true;
+  document.getElementById('runSpinWrap').style.display = '';
+  document.getElementById('runTxt').textContent = 'RUNNING…';
+  setStatus('busy', '运行中');
+  log('启动超分模型…', 'warn');
+  const fd = new FormData(); fd.append('image', fileInput.files[0]);
+  try {
+    const r = await fetch('/run', { method: 'POST', body: fd });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.message);
+    log('模型运行完成', 'ok');
+    setStatus('ready', '就绪');
+    await loadTree();
+  } catch (e) {
+    log('运行失败: ' + e.message, 'err');
+    setStatus('error', '错误');
+  }
+  btnRun.disabled = false;
+  document.getElementById('runSpinWrap').style.display = 'none';
+  document.getElementById('runTxt').textContent = '▶ RUN AGAIN';
+});
+
+async function loadTree() {
+  log('加载树形数据…');
+  setStatus('busy', '加载树');
+  try {
+    const r = await fetch('/tree_stats');
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.message);
+    treeData = d;
+    renderTree(d);
+    document.querySelector('#cardLayers .val').textContent = d.meta.num_layers;
+    document.querySelector('#cardHeads .val').textContent = d.meta.num_heads;
+    document.querySelector('#cardPatches .val').textContent = d.meta.num_patches;
+    log('树加载完成：' + d.meta.num_layers + ' 层 × ' + d.meta.num_heads + ' 头', 'ok');
+    setStatus('ready', '就绪');
+  } catch (e) {
+    log('树加载失败: ' + e.message, 'err');
+    setStatus('error', '错误');
+  }
+}
+function entropyColor(e, mn, mx) {
+  const t = (e - mn) / (mx - mn + 1e-9);
+  const h = t * 120;
+  return 'hsl(' + h + ',65%,50%)';
+}
+function renderTree(data) {
+  const layers = data.layers;
+  let allE = [];
+  layers.forEach(l => {
+    allE.push(l.entropy);
+    l.heads.forEach(h => { allE.push(h.entropy); h.patches.forEach(p => allE.push(p.entropy)); });
+  });
+  const mn = Math.min(...allE), mx = Math.max(...allE);
+  document.getElementById('treeEmpty').style.display = 'none';
+  const root = document.getElementById('treeRoot');
+  root.innerHTML = '';
+  layers.forEach(layer => {
+    const lc = entropyColor(layer.entropy, mn, mx);
+    const lid = 'lc-' + layer.layer_id;
+    const lDiv = document.createElement('div'); lDiv.className = 'tree-layer';
+    lDiv.innerHTML = `
+      <div class="tree-row" onclick="toggleNode('${lid}',this)">
+        <span class="tree-arrow" id="arr-${lid}">▶</span>
+        <span class="tree-badge" style="background:${lc}"></span>
+        <span class="tree-lbl">Layer ${layer.layer_id}</span>
+        <span class="tree-val">H=${layer.entropy.toFixed(2)}</span>
+      </div>
+      <div class="tree-children" id="${lid}"></div>`;
+    root.appendChild(lDiv);
+    const lChildren = lDiv.querySelector('#' + lid);
+    layer.heads.forEach(head => {
+      const hc = entropyColor(head.entropy, mn, mx);
+      const hid = 'hc-' + layer.layer_id + '-' + head.head_id;
+      const hDiv = document.createElement('div');
+      hDiv.innerHTML = `
+        <div class="tree-row" onclick="toggleNode('${hid}',this)">
+          <span class="tree-arrow" id="arr-${hid}">▶</span>
+          <span class="tree-badge" style="background:${hc}"></span>
+          <span class="tree-lbl">Head ${head.head_id}</span>
+          <span class="tree-val">H=${head.entropy.toFixed(2)}</span>
+          <span class="tree-val">mx=${head.max_attn.toFixed(2)}</span>
+        </div>
+        <div class="tree-children" id="${hid}"></div>`;
+      lChildren.appendChild(hDiv);
+      const hChildren = hDiv.querySelector('#' + hid);
+      const grid = document.createElement('div');
+      grid.className = 'patch-grid';
+      head.patches.forEach(patch => {
+        const pc = entropyColor(patch.entropy, mn, mx);
+        const cell = document.createElement('div');
+        cell.className = 'patch-cell';
+        cell.style.background = pc;
+        cell.title = 'P' + patch.patch_id + ' H=' + patch.entropy.toFixed(3) + ' mx=' + patch.max_attn.toFixed(3);
+        cell.dataset.layer = layer.layer_id;
+        cell.dataset.head  = head.head_id;
+        cell.dataset.patch = patch.patch_id;
+        cell.addEventListener('click', () => selectPatch(cell, +cell.dataset.layer, +cell.dataset.head, +cell.dataset.patch));
+        grid.appendChild(cell);
+      });
+      hChildren.appendChild(grid);
+    });
+  });
+}
+function toggleNode(id, row) {
+  const el = document.getElementById(id);
+  const arr = document.getElementById('arr-' + id);
+  const open = el.classList.toggle('open');
+  if (arr) arr.classList.toggle('open', open);
+}
+
+async function selectPatch(el, layer, head, patch) {
+  document.querySelectorAll('.patch-cell.sel').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+  sel = { layer, head, patch };
+  document.getElementById('bmL').textContent = 'Layer ' + layer;
+  document.getElementById('bmH').textContent = 'Head '  + head;
+  document.getElementById('bmP').textContent = 'Patch ' + patch;
+  const body = document.getElementById('hmBody');
+  body.innerHTML = '<div class="spinner"></div>';
+  log('加载热力图 L' + layer + ' H' + head + ' P' + patch);
+  setStatus('busy', '加载热力图');
+  document.querySelectorAll('.tb-tab').forEach(t => { if (t.dataset.panel === 'panelHeatmap') t.click(); });
+  try {
+    const r = await fetch('/visualize?layer_id='+layer+'&head_id='+head+'&patch_id='+patch);
+    if (!r.ok) { const d = await r.json(); throw new Error(d.message); }
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    body.innerHTML = '<img id="hmImg" src="' + url + '" alt="heatmap"/>';
+    log('热力图加载完成', 'ok');
+    setStatus('ready', '就绪');
+  } catch (e) {
+    log('热力图失败: ' + e.message, 'err');
+    setStatus('error', '错误');
+    body.innerHTML = '<div class="hm-empty"><div class="icon">⚠</div><h3>加载失败</h3><p>' + e.message + '</p></div>';
+  }
+}
+document.addEventListener('keydown', e => {
+  if (!sel || !treeData) return;
+  const P = treeData.meta.num_patches;
+  let np = sel.patch;
+  if (e.key === 'ArrowRight') np = Math.min(sel.patch+1, P-1);
+  else if (e.key === 'ArrowLeft')  np = Math.max(sel.patch-1, 0);
+  else if (e.key === 'ArrowDown')  np = Math.min(sel.patch+8, P-1);
+  else if (e.key === 'ArrowUp')    np = Math.max(sel.patch-8, 0);
+  else return;
+  e.preventDefault();
+  const cell = document.querySelector(`.patch-cell[data-layer="${sel.layer}"][data-head="${sel.head}"][data-patch="${np}"]`);
+  if (cell) selectPatch(cell, sel.layer, sel.head, np);
+});
+
+// ── 图表渲染函数 ──
+function renderChart(container, option) {
+  const existing = echarts.getInstanceByDom(container);
+  if (existing) existing.dispose();
+  const chart = echarts.init(container);
+  chart.setOption(option);
+  window.addEventListener('resize', () => chart.resize());
+  return chart;
+}
+function getOrCreateCard(key, meta) {
+  const grid = document.getElementById('anaGrid');
+  const empty = grid.querySelector('.ana-empty');
+  if (empty) empty.remove();
+  let card = document.getElementById('ana-' + key);
+  if (!card) {
+    card = document.createElement('div');
+    card.className = 'ana-card';
+    card.id = 'ana-' + key;
+    card.innerHTML = `
+      <div class="ana-card-head">
+        <div class="ana-card-dot" style="background:${meta.dot}"></div>
+        <span>${meta.label}</span>
+      </div>
+      <div class="ana-card-body">
+        <div class="chart-container"></div>
+      </div>`;
+    grid.appendChild(card);
+  }
+  return card.querySelector('.chart-container');
+}
+function renderKL_Locality(data, container) {
+  const layers = data.layers;
+  const L = data.num_layers;
+  const H = data.num_heads;
+  const klSeries = [];
+  for (let h = 0; h < H; h++) {
+    klSeries.push({
+      name: 'KL H' + h,
+      type: 'line',
+      data: layers.map(l => l.kl_per_head[h]),
+      lineStyle: { width: 1, type: 'dashed' },
+      symbol: 'none',
+      emphasis: { focus: 'series' }
+    });
+  }
+  klSeries.push({
+    name: 'KL 均值',
+    type: 'line',
+    data: layers.map(l => l.kl_mean),
+    lineStyle: { width: 2.5, color: '#00d4aa' },
+    symbol: 'circle',
+    symbolSize: 6,
+    emphasis: { focus: 'series' }
+  });
+  const option = {
+    title: { text: 'KL散度与局部性趋势', left: 'center', textStyle: { color: '#e8edf5', fontSize: 13 } },
+    tooltip: { trigger: 'axis' },
+    legend: { bottom: 0, textStyle: { color: '#8fa3bf' } },
+    grid: { top: 60, bottom: 60, left: 60, right: 60 },
+    xAxis: { type: 'category', data: layers.map((_,i) => 'L'+i), axisLabel: { color: '#8fa3bf' } },
+    yAxis: { type: 'value', name: 'KL散度', axisLabel: { color: '#8fa3bf' } },
+    series: klSeries
+  };
+  renderChart(container, option);
+}
+function renderFunnel(data, container) {
+  const layers = data.layers;
+  const option = {
+    title: { text: '有效秩退化与主导能量', left: 'center', textStyle: { color: '#e8edf5' } },
+    tooltip: { trigger: 'axis' },
+    legend: { bottom: 0, textStyle: { color: '#8fa3bf' } },
+    grid: { top: 60, bottom: 60, left: 60, right: 60 },
+    xAxis: { type: 'category', data: layers.map(l => 'L'+l.layer), axisLabel: { color: '#8fa3bf' } },
+    yAxis: { type: 'value', name: '相对比例 (%)', axisLabel: { color: '#8fa3bf' } },
+    series: [
+      { name: '有效秩相对值', type: 'bar', data: layers.map(l => l.effective_rank_rel), itemStyle: { color: '#4da6ff' } },
+      { name: '主导奇异值能量', type: 'bar', data: layers.map(l => l.singular_energy_rel), itemStyle: { color: '#b48eff' } }
+    ]
+  };
+  renderChart(container, option);
+}
+function renderDegrade(data, container) {
+  const layers = data.layers;
+  const option = {
+    title: { text: '多维退化指标（相对于 L0）', left: 'center', textStyle: { color: '#e8edf5' } },
+    tooltip: { trigger: 'axis' },
+    legend: { bottom: 0, textStyle: { color: '#8fa3bf' } },
+    grid: { top: 60, bottom: 60, left: 60, right: 60 },
+    xAxis: { type: 'category', data: layers.map(l => 'L'+l.layer), axisLabel: { color: '#8fa3bf' } },
+    yAxis: { type: 'value', name: '%', axisLabel: { color: '#8fa3bf' } },
+    series: [
+      { name: '对角线注意力', type: 'bar', data: layers.map(l => l.diag_self_attn_rel), itemStyle: { color: '#2ecc71' } },
+      { name: '行方差', type: 'bar', data: layers.map(l => l.row_var_rel), itemStyle: { color: '#3498db' } },
+      { name: '稀疏度', type: 'bar', data: layers.map(l => l.sparsity_rel), itemStyle: { color: '#f39c12' } },
+      { name: '条件数(逆)', type: 'bar', data: layers.map(l => l.cond_num_inv_rel), itemStyle: { color: '#e74c3c' } }
+    ]
+  };
+  renderChart(container, option);
+}
+function render3D(data, container) {
+  const layers = data.layers;
+  const option = {
+    title: { text: '退化指标 3D 概览', left: 'center', textStyle: { color: '#e8edf5' } },
+    tooltip: {},
+    legend: { bottom: 0, textStyle: { color: '#8fa3bf' }, data: ['行方差', '稀疏度', 'Gini'] },
+    polar: {},
+    angleAxis: { type: 'category', data: layers.map(l => 'L'+l.layer), axisLabel: { color: '#8fa3bf' } },
+    radiusAxis: { axisLabel: { color: '#8fa3bf' } },
+    series: [
+      { name: '行方差', type: 'bar', coordinateSystem: 'polar', data: layers.map(l => l.row_var_rel), itemStyle: { color: '#4da6ff' } },
+      { name: '稀疏度', type: 'bar', coordinateSystem: 'polar', data: layers.map(l => l.sparsity_rel), itemStyle: { color: '#f0b429' } },
+      { name: 'Gini', type: 'bar', coordinateSystem: 'polar', data: layers.map(l => l.gini_rel), itemStyle: { color: '#ff5f57' } }
+    ]
+  };
+  renderChart(container, option);
+}
+function renderLayerSimilarity(data, container) {
+  const matrix = data.cosine;
+  const L = matrix.length;
+  const heatData = [];
+  for (let i = 0; i < L; i++) {
+    for (let j = 0; j < L; j++) {
+      heatData.push([i, j, matrix[i][j]]);
+    }
+  }
+  const option = {
+    title: { text: '层间余弦相似度矩阵', left: 'center', textStyle: { color: '#e8edf5' } },
+    tooltip: { position: 'top' },
+    xAxis: { type: 'category', data: Array.from({length: L}, (_,i) => 'L'+i), axisLabel: { color: '#8fa3bf' } },
+    yAxis: { type: 'category', data: Array.from({length: L}, (_,i) => 'L'+i), axisLabel: { color: '#8fa3bf' } },
+    visualMap: { min: 0, max: 1, calculable: true, orient: 'horizontal', left: 'center', bottom: 0, textStyle: { color: '#8fa3bf' } },
+    series: [{ type: 'heatmap', data: heatData, label: { show: true, color: '#e8edf5', fontSize: 9 } }]
+  };
+  renderChart(container, option);
+}
+function renderHeadSimilarity(data, container) {
+  const layer = data.layers[0];
+  const H = layer.cosine.length;
+  const heatData = [];
+  for (let i = 0; i < H; i++) {
+    for (let j = 0; j < H; j++) {
+      heatData.push([i, j, layer.cosine[i][j]]);
+    }
+  }
+  const option = {
+    title: { text: '头间相似度 (L0)', left: 'center', textStyle: { color: '#e8edf5' } },
+    tooltip: {},
+    xAxis: { type: 'category', data: Array.from({length: H}, (_,i) => 'H'+i), axisLabel: { color: '#8fa3bf' } },
+    yAxis: { type: 'category', data: Array.from({length: H}, (_,i) => 'H'+i), axisLabel: { color: '#8fa3bf' } },
+    visualMap: { min: 0, max: 1, calculable: true, orient: 'horizontal', left: 'center', bottom: 0, textStyle: { color: '#8fa3bf' } },
+    series: [{ type: 'heatmap', data: heatData, label: { show: true, color: '#e8edf5', fontSize: 9 } }]
+  };
+  renderChart(container, option);
+}
+function renderPatchSimilarity(data, container) {
+  const matrix = data.patch_cos_sim;
+  const N = matrix.length;
+  const heatData = [];
+  for (let i = 0; i < N; i++) {
+    for (let j = 0; j < N; j++) {
+      heatData.push([i, j, matrix[i][j]]);
+    }
+  }
+  const option = {
+    title: { text: 'Patch 余弦相似度 (' + data.suffix + ')', left: 'center', textStyle: { color: '#e8edf5' } },
+    tooltip: {},
+    xAxis: { type: 'category', data: Array.from({length: N}, (_,i) => i), axisLabel: { color: '#8fa3bf' } },
+    yAxis: { type: 'category', data: Array.from({length: N}, (_,i) => i), axisLabel: { color: '#8fa3bf' } },
+    visualMap: { min: -0.1, max: 1, calculable: true, orient: 'horizontal', left: 'center', bottom: 0, textStyle: { color: '#8fa3bf' } },
+    series: [{ type: 'heatmap', data: heatData }]
+  };
+  renderChart(container, option);
+}
+function renderAdvancedStats(data, container) {
+  const er = data.effective_rank;
+  const L = er.length, H = er[0].length;
+  const heatData = [];
+  for (let i = 0; i < L; i++) {
+    for (let j = 0; j < H; j++) {
+      heatData.push([j, i, er[i][j]]);
+    }
+  }
+  const option = {
+    title: { text: '有效秩（Effective Rank）', left: 'center', textStyle: { color: '#e8edf5' } },
+    tooltip: {},
+    xAxis: { type: 'category', data: Array.from({length: H}, (_,i) => 'H'+i), axisLabel: { color: '#8fa3bf' } },
+    yAxis: { type: 'category', data: Array.from({length: L}, (_,i) => 'L'+i), axisLabel: { color: '#8fa3bf' } },
+    visualMap: { min: 0, max: Math.max(...er.flat()), calculable: true, orient: 'horizontal', left: 'center', bottom: 0, textStyle: { color: '#8fa3bf' } },
+    series: [{ type: 'heatmap', data: heatData, label: { show: true, fontSize: 9 } }]
+  };
+  renderChart(container, option);
+}
+function renderWasserstein(data, container) {
+  const option = {
+    title: { text: '头间平均 Wasserstein 距离', left: 'center', textStyle: { color: '#e8edf5' } },
+    tooltip: { trigger: 'axis' },
+    xAxis: { type: 'category', data: data.mean_wd_over_layers.map((_,i) => 'L'+i), axisLabel: { color: '#8fa3bf' } },
+    yAxis: { type: 'value', name: 'WD', axisLabel: { color: '#8fa3bf' } },
+    series: [{
+      type: 'line', data: data.mean_wd_over_layers,
+      lineStyle: { color: '#e74c3c', width: 2.5 },
+      areaStyle: { color: 'rgba(231,76,60,0.15)' },
+      itemStyle: { color: '#e74c3c' }
+    }]
+  };
+  renderChart(container, option);
+}
+const chartHandlers = {
+  kl: { label: 'KL散度 / 局部性',  dot: '#00d4aa', render: renderKL_Locality, route: '/analysis/kl_locality' },
+  fn: { label: '漏斗图',            dot: '#4da6ff', render: renderFunnel,      route: '/analysis/funnel' },
+  db: { label: '退化柱状图',        dot: '#f0b429', render: renderDegrade,     route: '/analysis/degrade_bar' },
+  '3d':{ label: '3D 退化指标',      dot: '#b48eff', render: render3D,          route: '/analysis/3d_bar' },
+  ls: { label: '层间相似度矩阵',    dot: '#ff5f57', render: renderLayerSimilarity, route: '/analysis/layer_similarity' },
+  hs: { label: '头间相似度矩阵',    dot: '#00d4aa', render: renderHeadSimilarity,  route: '/analysis/head_similarity' },
+  ps: { label: 'Patch 精细分析',    dot: '#4da6ff', render: renderPatchSimilarity,  route: '/analysis/patch_similarity' },
+  as: { label: '高级统计分析',      dot: '#f0b429', render: renderAdvancedStats,    route: '/analysis/advanced_stats' },
+  hw: { label: 'Wasserstein 距离',  dot: '#b48eff', render: renderWasserstein,     route: '/analysis/head_wasserstein' },
+};
+async function loadAna(btn) {
+  const key = btn.dataset.key;
+  const handler = chartHandlers[key];
+  if (!handler) return;
+  if (anaCache[key]) {
+    const container = getOrCreateCard(key, handler);
+    handler.render(anaCache[key], container);
+    btn.classList.add('loaded');
+    return;
+  }
+  btn.classList.add('loading');
+  log('加载分析: ' + handler.route);
+  setStatus('busy', '生成图表');
+  document.querySelectorAll('.tb-tab').forEach(t => { if (t.dataset.panel === 'panelAnalysis') t.click(); });
+  try {
+    let url = handler.route;
+    if (key === 'ps') {
+      const lid = sel ? sel.layer : 0;
+      const hid = sel ? sel.head : 0;
+      url += `?layer_id=${lid}&head_id=${hid}`;
+    }
+    const r = await fetch(url);
+    if (!r.ok) { const d = await r.json(); throw new Error(d.message); }
+    const data = await r.json();
+    anaCache[key] = data;
+    const container = getOrCreateCard(key, handler);
+    handler.render(data, container);
+    btn.classList.remove('loading');
+    btn.classList.add('loaded');
+    log('分析完成: ' + handler.route, 'ok');
+    setStatus('ready', '就绪');
+  } catch (e) {
+    const card = document.getElementById('ana-' + key);
+    if (card) card.querySelector('.chart-container').innerHTML = `<div style="padding:20px;color:var(--red)">${e.message}</div>`;
+    btn.classList.remove('loading');
+    log('分析失败: ' + e.message, 'err');
+    setStatus('error', '错误');
+  }
+}
+async function loadAllAna() {
+  const btn = document.getElementById('btnLoadAll');
+  btn.textContent = '加载中…';
+  btn.style.opacity = '.5';
+  btn.disabled = true;
+  log('请求全部分析数据…', 'warn');
+  setStatus('busy', '全量分析');
+  document.querySelectorAll('.tb-tab').forEach(t => { if (t.dataset.panel === 'panelAnalysis') t.click(); });
+  try {
+    const r = await fetch('/analysis/all');
+    const allData = await r.json();
+    if (!r.ok) throw new Error(allData.message);
+    const keyMap = {
+      kl_locality: 'kl',
+      funnel: 'fn',
+      degrade_bar: 'db',
+      '3d_bar': '3d',
+      layer_similarity: 'ls',
+      head_similarity: 'hs',
+      patch_similarity_example: 'ps',
+      advanced_stats: 'as',
+      head_wasserstein: 'hw'
+    };
+    for (const [apiKey, uiKey] of Object.entries(keyMap)) {
+      if (!allData[apiKey]) continue;
+      anaCache[uiKey] = allData[apiKey];
+      const handler = chartHandlers[uiKey];
+      if (!handler) continue;
+      const container = getOrCreateCard(uiKey, handler);
+      handler.render(allData[apiKey], container);
+      const tabBtn = document.querySelector(`.ana-btn[data-key="${uiKey}"]`);
+      if (tabBtn) { tabBtn.classList.remove('loading'); tabBtn.classList.add('loaded'); }
+    }
+    log('全部分析加载完成', 'ok');
+    setStatus('ready', '就绪');
+  } catch (e) {
+    log('全量加载失败: ' + e.message, 'err');
+    setStatus('error', '错误');
+  }
+  btn.textContent = '全部加载';
+  btn.style.opacity = '';
+  btn.disabled = false;
+}
+</script>
+</body>
+</html>
