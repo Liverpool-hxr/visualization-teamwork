@@ -9,7 +9,21 @@ from PIL import Image
 import cv2
 import copy
 
-from HMHT import LEPE1D
+
+class LEPE1D(nn.Module):
+    """局部位置增强：depthwise Conv1d 作用于 V 的输出，提供局部归纳偏置。"""
+
+    def __init__(self, num_head: int, head_dim: int, kernel_size: int = 3):
+        super().__init__()
+        d = num_head * head_dim
+        self.conv = nn.Conv1d(d, d, kernel_size,
+                              padding=kernel_size // 2, groups=d, bias=False)
+
+    def forward(self, z: torch.Tensor) -> torch.Tensor:  # z: [B,H,N,d]
+        B, H, N, d = z.shape
+        flat = z.reshape(B, H * d, N)
+        return self.conv(flat).reshape(B, H, N, d)
+
 
 
 class PatchEmbedding(nn.Module):

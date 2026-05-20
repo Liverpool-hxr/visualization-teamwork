@@ -44,8 +44,8 @@ class GlobalFFTAttention(nn.Module):
     def forward(self, Q: torch.Tensor, K: torch.Tensor, V: torch.Tensor) -> torch.Tensor:
         B, H, N, d = V.shape
         assert N == self.seq_len, f"FFT 期望 seq_len={self.seq_len}，实际 N={N}"
-        V_f = torch.fft.rfft(V.float(), dim=2, norm='ortho')          # [B,H,freq_bins,d]
-        w   = self.weight.permute(0, 2, 1).unsqueeze(0)               # [1,H,freq_bins,d]
+        V_f = torch.fft.rfft(V.float(), dim=2, norm='ortho')  # [B,H,freq_bins,d]
+        w = self.weight.permute(0, 2, 1).unsqueeze(0)  # [1,H,freq_bins,d]
         V_f = V_f * w
         return torch.fft.irfft(V_f, n=N, dim=2, norm='ortho').to(V.dtype)
 
@@ -68,18 +68,18 @@ class GeometricAttention2D(nn.Module):
         gy = torch.arange(H_spatial).unsqueeze(1).expand(H_spatial, W_spatial).reshape(-1)
         gx = torch.arange(W_spatial).unsqueeze(0).expand(H_spatial, W_spatial).reshape(-1)
         dist_sq = (gy[:, None] - gy[None, :]) ** 2 + (gx[:, None] - gx[None, :]) ** 2
-        self.register_buffer('dist_sq', dist_sq.float())               # [N, N]
+        self.register_buffer('dist_sq', dist_sq.float())  # [N, N]
 
         # 每个头一个可学习 log(σ²)，控制高斯衰减宽度
         self.log_sigma2 = nn.Parameter(torch.zeros(num_head))
 
     def forward(self, Q: torch.Tensor, K: torch.Tensor, V: torch.Tensor) -> torch.Tensor:
         B, H, N, d = Q.shape
-        scale   = math.sqrt(d) / self.temperature
-        logits  = torch.matmul(Q, K.transpose(-2, -1)) / scale        # [B,H,N,N]
-        sigma2  = self.log_sigma2.exp().clamp(min=1e-4)               # [H]
-        geo     = torch.exp(-self.dist_sq / sigma2[:, None, None])    # [H,N,N]
-        attn    = torch.softmax(logits + geo.unsqueeze(0), dim=-1)
+        scale = math.sqrt(d) / self.temperature
+        logits = torch.matmul(Q, K.transpose(-2, -1)) / scale  # [B,H,N,N]
+        sigma2 = self.log_sigma2.exp().clamp(min=1e-4)  # [H]
+        geo = torch.exp(-self.dist_sq / sigma2[:, None, None])  # [H,N,N]
+        attn = torch.softmax(logits + geo.unsqueeze(0), dim=-1)
         return torch.matmul(attn, V)
 
 
@@ -143,7 +143,7 @@ class SpectralGates(nn.Module):
         d = num_head * head_dim
         self.proj = nn.Conv1d(d, d, 1, groups=num_head)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:      # x: [B,H,N,d]
+    def forward(self, x: torch.Tensor) -> torch.Tensor:  # x: [B,H,N,d]
         B, H, N, d = x.shape
         flat = x.reshape(B, H * d, N)
         return (flat * torch.sigmoid(self.proj(flat))).reshape(B, H, N, d)
@@ -155,7 +155,7 @@ class AdaptiveFusion(nn.Module):
     def __init__(self, dim: int):
         super().__init__()
         self.gate = nn.Linear(dim, 2 * dim, bias=False)
-        self.out  = nn.Linear(dim, dim,     bias=False)
+        self.out = nn.Linear(dim, dim, bias=False)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         a, b = self.gate(x).chunk(2, dim=-1)
@@ -171,7 +171,7 @@ class LEPE1D(nn.Module):
         self.conv = nn.Conv1d(d, d, kernel_size,
                               padding=kernel_size // 2, groups=d, bias=False)
 
-    def forward(self, z: torch.Tensor) -> torch.Tensor:      # z: [B,H,N,d]
+    def forward(self, z: torch.Tensor) -> torch.Tensor:  # z: [B,H,N,d]
         B, H, N, d = z.shape
         flat = z.reshape(B, H * d, N)
         return self.conv(flat).reshape(B, H, N, d)
@@ -192,15 +192,15 @@ class ConvFFN(nn.Module):
     def __init__(self, dim: int, ffn_dim: int,
                  dropout: float = 0.0, kernel_size: int = 3):
         super().__init__()
-        self.fc1      = nn.Linear(dim, ffn_dim)
-        self.act      = nn.GELU()
-        self.drop1    = nn.Dropout(dropout)
-        self.dw_conv  = nn.Conv1d(ffn_dim, ffn_dim, kernel_size,
-                                  padding=kernel_size // 2,
-                                  groups=ffn_dim, bias=False)
-        self.dw_norm  = nn.LayerNorm(ffn_dim)
-        self.fc2      = nn.Linear(ffn_dim, dim)
-        self.drop2    = nn.Dropout(dropout)
+        self.fc1 = nn.Linear(dim, ffn_dim)
+        self.act = nn.GELU()
+        self.drop1 = nn.Dropout(dropout)
+        self.dw_conv = nn.Conv1d(ffn_dim, ffn_dim, kernel_size,
+                                 padding=kernel_size // 2,
+                                 groups=ffn_dim, bias=False)
+        self.dw_norm = nn.LayerNorm(ffn_dim)
+        self.fc2 = nn.Linear(ffn_dim, dim)
+        self.drop2 = nn.Dropout(dropout)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         h = self.drop1(self.act(self.fc1(x)))
@@ -226,8 +226,8 @@ class PSMHDWindowEncoder(nn.Module):
         assert attn_dim % num_head == 0 and num_head % 2 == 0
         self.num_head = num_head
         self.head_dim = attn_dim // num_head
-        self.seq_len  = window_size * window_size
-        self.ws       = window_size
+        self.seq_len = window_size * window_size
+        self.ws = window_size
 
         self.q_proj = nn.Linear(input_dim, attn_dim, bias=False)
         self.k_proj = nn.Linear(input_dim, attn_dim, bias=False)
@@ -235,22 +235,22 @@ class PSMHDWindowEncoder(nn.Module):
 
         half_head = num_head // 2
         # 前 half_head 个头 → 序列分区
-        self.seq_attn  = SeqPartitionAttention(half_head, self.head_dim, self.seq_len,
-                                               window_size, window_size, temperature)
+        self.seq_attn = SeqPartitionAttention(half_head, self.head_dim, self.seq_len,
+                                              window_size, window_size, temperature)
         # 后 half_head 个头 → 通道分区
         self.chan_attn = ChanPartitionAttention(half_head, self.head_dim, self.seq_len,
-                                               window_size, window_size, temperature)
+                                                window_size, window_size, temperature)
 
-        self.lepe    = LEPE1D(num_head, self.head_dim)
-        self.gates   = SpectralGates(num_head, self.head_dim)
-        self.pnorm   = nn.LayerNorm(attn_dim)
-        self.fusion  = AdaptiveFusion(attn_dim)
-        self.ffn     = ConvFFN(input_dim, ffn_dim, dropout)
-        self.norm1   = nn.LayerNorm(input_dim)
-        self.norm2   = nn.LayerNorm(input_dim)
-        self.ls1     = LayerScale(input_dim, ls_init)
-        self.ls2     = LayerScale(input_dim, ls_init)
-        self.drop    = nn.Dropout(dropout)
+        self.lepe = LEPE1D(num_head, self.head_dim)
+        self.gates = SpectralGates(num_head, self.head_dim)
+        self.pnorm = nn.LayerNorm(attn_dim)
+        self.fusion = AdaptiveFusion(attn_dim)
+        self.ffn = ConvFFN(input_dim, ffn_dim, dropout)
+        self.norm1 = nn.LayerNorm(input_dim)
+        self.norm2 = nn.LayerNorm(input_dim)
+        self.ls1 = LayerScale(input_dim, ls_init)
+        self.ls2 = LayerScale(input_dim, ls_init)
+        self.drop = nn.Dropout(dropout)
 
     def forward(self, x: torch.Tensor, attn_mask: torch.Tensor | None = None
                 ) -> tuple[torch.Tensor, torch.Tensor]:
@@ -271,15 +271,15 @@ class PSMHDWindowEncoder(nn.Module):
         V = proj(self.v_proj)
 
         Hh = H // 2
-        out1 = self.seq_attn (Q[:, :Hh], K[:, :Hh], V[:, :Hh])
+        out1 = self.seq_attn(Q[:, :Hh], K[:, :Hh], V[:, :Hh])
         out2 = self.chan_attn(Q[:, Hh:], K[:, Hh:], V[:, Hh:])
-        z = torch.cat([out1, out2], dim=1)          # [Bw, H, N, d]
+        z = torch.cat([out1, out2], dim=1)  # [Bw, H, N, d]
 
         # 伪 attn_map：用 QK^T softmax 近似，不影响梯度
         with torch.no_grad():
             attn_map = torch.softmax(
                 torch.matmul(Q, K.transpose(-2, -1)) / math.sqrt(d), dim=-1
-            )                                        # [Bw, H, N, N]
+            )  # [Bw, H, N, N]
 
         z = z + self.lepe(z)
         z = self.gates(z)
@@ -312,7 +312,7 @@ class SwinPSMHDLayer(nn.Module):
                  temperature: float = 3.0, dropout: float = 0.0, ls_init: float = 0.1):
         super().__init__()
         assert 0 <= shift_size < window_size
-        self.ws         = window_size
+        self.ws = window_size
         self.shift_size = shift_size
 
         self.encoder = PSMHDWindowEncoder(
@@ -332,13 +332,13 @@ class SwinPSMHDLayer(nn.Module):
         coords_w = torch.arange(window_size)
         # [2, ws, ws]
         grid = torch.stack(torch.meshgrid(coords_h, coords_w, indexing='ij'))
-        flat = grid.flatten(1)                          # [2, ws*ws]
-        rel  = flat[:, :, None] - flat[:, None, :]     # [2, ws*ws, ws*ws]
-        rel  = rel.permute(1, 2, 0).contiguous()        # [ws*ws, ws*ws, 2]
+        flat = grid.flatten(1)  # [2, ws*ws]
+        rel = flat[:, :, None] - flat[:, None, :]  # [2, ws*ws, ws*ws]
+        rel = rel.permute(1, 2, 0).contiguous()  # [ws*ws, ws*ws, 2]
         rel[:, :, 0] += window_size - 1
         rel[:, :, 1] += window_size - 1
         rel[:, :, 0] *= 2 * window_size - 1
-        idx = rel.sum(-1)                               # [ws*ws, ws*ws]
+        idx = rel.sum(-1)  # [ws*ws, ws*ws]
         self.register_buffer('rpb_idx', idx)
 
         # attn_mask 在 forward 时动态生成（依赖 H, W）
@@ -349,8 +349,8 @@ class SwinPSMHDLayer(nn.Module):
         """返回 [1, H, ws*ws, ws*ws] 的偏置，供 attn logits 直接相加。"""
         bias = self.rpb_table[self.rpb_idx.reshape(-1)]  # [ws*ws*ws*ws, H]
         bias = bias.reshape(self.ws * self.ws, self.ws * self.ws,
-                            -1).permute(2, 0, 1)          # [H, ws*ws, ws*ws]
-        return bias.unsqueeze(0)                          # [1, H, N, N]
+                            -1).permute(2, 0, 1)  # [H, ws*ws, ws*ws]
+        return bias.unsqueeze(0)  # [1, H, N, N]
 
     # ── Swin 标准 cyclic-shift mask ────────────────────────────────
     def _attn_mask(self, H: int, W: int, device: torch.device) -> torch.Tensor | None:
@@ -373,11 +373,11 @@ class SwinPSMHDLayer(nn.Module):
 
         # 窗口划分 → 计算同一窗口内 token 对是否属于同区域
         mask_win = self._partition(img_mask.squeeze(-1).unsqueeze(1),
-                                   H, W)                   # [nW, ws*ws, 1]
+                                   H, W)  # [nW, ws*ws, 1]
         attn_mask = mask_win.squeeze(-1).unsqueeze(2) - \
-                    mask_win.squeeze(-1).unsqueeze(1)       # [nW, ws*ws, ws*ws]
+                    mask_win.squeeze(-1).unsqueeze(1)  # [nW, ws*ws, ws*ws]
         attn_mask = attn_mask.masked_fill(attn_mask != 0, -100.0) \
-                              .masked_fill(attn_mask == 0,   0.0)
+            .masked_fill(attn_mask == 0, 0.0)
         self._mask_cache[key] = attn_mask
         return attn_mask
 
@@ -394,17 +394,17 @@ class SwinPSMHDLayer(nn.Module):
         """feat [B, C, H, W] → [B*nW, ws*ws, C]"""
         B, C, H, W = feat.shape
         ws = self.ws
-        x = feat.view(B, C, H // ws, ws, W // ws, ws)   # [B,C,nH,ws,nW,ws]
-        x = x.permute(0, 2, 4, 3, 5, 1).contiguous()   # [B,nH,nW,ws,ws,C]
-        return x.view(-1, ws * ws, C)                   # [B*nW, ws*ws, C]
+        x = feat.view(B, C, H // ws, ws, W // ws, ws)  # [B,C,nH,ws,nW,ws]
+        x = x.permute(0, 2, 4, 3, 5, 1).contiguous()  # [B,nH,nW,ws,ws,C]
+        return x.view(-1, ws * ws, C)  # [B*nW, ws*ws, C]
 
     def _win_reverse(self, wins: torch.Tensor, B: int, H: int, W: int) -> torch.Tensor:
         """wins [B*nW, ws*ws, C] → [B, C, H, W]"""
         ws = self.ws
-        C  = wins.shape[-1]
+        C = wins.shape[-1]
         nH, nW = H // ws, W // ws
         x = wins.view(B, nH, nW, ws, ws, C)
-        x = x.permute(0, 5, 1, 3, 2, 4).contiguous()   # [B,C,nH,ws,nW,ws]
+        x = x.permute(0, 5, 1, 3, 2, 4).contiguous()  # [B,C,nH,ws,nW,ws]
         return x.view(B, C, H, W)
 
     # ── 前向 ───────────────────────────────────────────────────────
@@ -464,30 +464,30 @@ class SwinPSMHDTransformer(nn.Module):
     """
 
     def __init__(self,
-                 depth:       int,
-                 input_dim:   int,
-                 attn_dim:    int,
-                 ffn_dim:     int,
-                 num_head:    int,
-                 window_size: int   = 8,
+                 depth: int,
+                 input_dim: int,
+                 attn_dim: int,
+                 ffn_dim: int,
+                 num_head: int,
+                 window_size: int = 8,
                  temperature: float = 3.0,
-                 dropout:     float = 0.0,
-                 ls_init:     float = 0.1):
+                 dropout: float = 0.0,
+                 ls_init: float = 0.1):
         super().__init__()
         self.ws = window_size
 
         # 交替 W-MSA / SW-MSA
         self.layers = nn.ModuleList([
             SwinPSMHDLayer(
-                input_dim  = input_dim,
-                attn_dim   = attn_dim,
-                ffn_dim    = ffn_dim,
-                num_head   = num_head,
-                window_size= window_size,
-                shift_size = 0 if (i % 2 == 0) else window_size // 2,
-                temperature= temperature,
-                dropout    = dropout,
-                ls_init    = ls_init,
+                input_dim=input_dim,
+                attn_dim=attn_dim,
+                ffn_dim=ffn_dim,
+                num_head=num_head,
+                window_size=window_size,
+                shift_size=0 if (i % 2 == 0) else window_size // 2,
+                temperature=temperature,
+                dropout=dropout,
+                ls_init=ls_init,
             )
             for i in range(depth)
         ])
@@ -522,7 +522,7 @@ class SwinPSMHDTransformer(nn.Module):
                     break
         assert H_f * W_f == N, f"无法将序列长度 N={N} 还原为 2D 特征图"
 
-        feat = x.transpose(1, 2).view(B, C, H_f, W_f)   # [B,C,H,W]
+        feat = x.transpose(1, 2).view(B, C, H_f, W_f)  # [B,C,H,W]
 
         # ── ② padding ─────────────────────────────────────────────
         feat, pb, pr = self._pad(feat, ws)
@@ -539,7 +539,7 @@ class SwinPSMHDTransformer(nn.Module):
             feat = feat[:, :, :H_f, :W_f].contiguous()
 
         # ── ⑤ 2D → 序列 ──────────────────────────────────────────
-        x_out = feat.view(B, C, N).transpose(1, 2)       # [B,N,C]
+        x_out = feat.view(B, C, N).transpose(1, 2)  # [B,N,C]
         return x_out, attn_list
 
 
@@ -550,24 +550,24 @@ class SwinPSMHDTransformer(nn.Module):
 if __name__ == "__main__":
     torch.manual_seed(0)
 
-    B, H_sp, W_sp = 2, 48, 48      # 模拟 48×48 的特征图（patch_size=1）
-    C      = 128
-    DEPTH  = 6
-    HEADS  = 8
-    WS     = 8                      # 每窗口 8×8 = 64 token
+    B, H_sp, W_sp = 2, 48, 48  # 模拟 48×48 的特征图（patch_size=1）
+    C = 128
+    DEPTH = 6
+    HEADS = 8
+    WS = 8  # 每窗口 8×8 = 64 token
 
-    N = H_sp * W_sp                 # 2304
+    N = H_sp * W_sp  # 2304
     x = torch.randn(B, N, C)
 
     model = SwinPSMHDTransformer(
-        depth       = DEPTH,
-        input_dim   = C,
-        attn_dim    = C,
-        ffn_dim     = C * 4,
-        num_head    = HEADS,
-        window_size = WS,
-        temperature = 3.0,
-        dropout     = 0.0,
+        depth=DEPTH,
+        input_dim=C,
+        attn_dim=C,
+        ffn_dim=C * 4,
+        num_head=HEADS,
+        window_size=WS,
+        temperature=3.0,
+        dropout=0.0,
     )
     model.eval()
 
@@ -587,7 +587,7 @@ if __name__ == "__main__":
 
     # 反向传播测试
     model.train()
-    x2  = torch.randn(B, N, C, requires_grad=True)
+    x2 = torch.randn(B, N, C, requires_grad=True)
     out2, _ = model(x2)
     out2.mean().backward()
     print("✓ 反向传播通过")
