@@ -17,6 +17,7 @@ from torch.optim.lr_scheduler import CosineAnnealingLR, LinearLR, SequentialLR, 
     ReduceLROnPlateau
 import numpy as np
 
+
 def cubic(x):
     """Matlab 双三次插值核，Keys 公式，a=-0.5（与 Matlab 一致）"""
     absx = np.abs(x)
@@ -201,9 +202,18 @@ class TestSRDataset(Dataset):
 
     def __getitem__(self, idx):
         hr_img = Image.open(self.img_paths[idx]).convert('RGB')
-        hr_tensor = transforms.ToTensor()(hr_img)
+        hr_tensor = transforms.ToTensor()(hr_img)  # [C, H, W]
 
-        # ── LR 生成：同样使用 Matlab-compatible 双三次 ──────────
+        # ── 中心裁剪（如果需要）────────────────────────────────────
+        _, h, w = hr_tensor.shape
+        # 确保裁剪尺寸不超过原图
+        crop_h = min(128, h)
+        crop_w = min(128, w)
+        start_h = (h - crop_h) // 2
+        start_w = (w - crop_w) // 2
+        hr_tensor = hr_tensor[:, start_h:start_h+crop_h, start_w:start_w+crop_w]
+
+        # ── LR 生成：从裁剪后的 HR 下采样 ─────────────────────────
         lr_tensor = matlab_imresize(hr_tensor, scale=1.0 / self.scale)
 
         return lr_tensor, hr_tensor
@@ -226,6 +236,11 @@ def get_test_loader(test_hr_dir, batch_size=1, num_workers=2, scale=4):
 # =============================================================================
 # 测试（官方标准：裁掉边缘 scale 个像素后再算 PSNR / SSIM）
 # =============================================================================
+def rgb_to_ycbcr(img):
+    """img: [B,3,H,W], range [0,1] → Y: [B,1,H,W]"""
+    coeff = torch.tensor([0.299, 0.587, 0.114], device=img.device).view(1, 3, 1, 1)
+    return (img * coeff).sum(dim=1, keepdim=True)
+
 
 def test(model, testloader, device, scale=4):
     """
@@ -237,7 +252,10 @@ def test(model, testloader, device, scale=4):
     """
     model.eval()
     psnr_metric = torchmetrics.PeakSignalNoiseRatio(data_range=1.0).to(device)
-    ssim_metric = torchmetrics.StructuralSimilarityIndexMeasure(data_range=1.0).to(device)
+    ssim_metric = torchmetrics.StructuralSimilarityIndexMeasure(
+        data_range=1.0,
+        kernel_size=11  # 标准设置
+    ).to(device)
 
     psnr_total, ssim_total, count = 0.0, 0.0, 0
     border = scale  # 官方：裁掉四周各 scale 个像素
@@ -245,7 +263,7 @@ def test(model, testloader, device, scale=4):
     with torch.no_grad():
         for lr, hr in testloader:
             lr, hr = lr.to(device), hr.to(device)
-            sr = model(lr)
+            sr, _ = model(lr)
 
             # ── 尺寸对齐（以防模型输出与 HR 不完全相同）────────
             _, _, h_sr, w_sr = sr.shape
@@ -259,8 +277,13 @@ def test(model, testloader, device, scale=4):
             sr_crop = sr[:, :, border:-border, border:-border]
             hr_crop = hr[:, :, border:-border, border:-border]
 
-            psnr_total += psnr_metric(sr_crop, hr_crop).item()
-            ssim_total += ssim_metric(sr_crop, hr_crop).item()
+            sr_y = rgb_to_ycbcr(sr_crop)
+            hr_y = rgb_to_ycbcr(hr_crop)
+            psnr = psnr_metric(sr_y, hr_y)
+            ssim = ssim_metric(sr_y, hr_y)
+
+            psnr_total += psnr.item()
+            ssim_total += ssim.item()
             count += 1
 
     return psnr_total / max(count, 1), ssim_total / max(count, 1)
@@ -308,7 +331,7 @@ def train(model, trainloader, testloader, criterion, optimizer, scheduler, devic
 
         print(f"[Epoch {epoch + 1}] Loss: {avg_loss:.4f} | PSNR: {psnr:.2f} | SSIM: {ssim:.4f}")
 
-        if (epoch + 1) % 20 == 0:
+        if (epoch + 1) % 10 == 0:
             ckpt_name = f"sr_epoch_{epoch + 1}.pth"
             torch.save(model.state_dict(), ckpt_name)
             print(f"已保存检查点: {ckpt_name}")
@@ -331,6 +354,7 @@ def train(model, trainloader, testloader, criterion, optimizer, scheduler, devic
     plt.savefig("sr_train_curves_hxr.png", dpi=300)
     plt.close()
 
+
 # -----------------------------
 # 主函数
 # -----------------------------
@@ -343,16 +367,16 @@ if __name__ == "__main__":
 
     upscale_factor = 4
 
-    trainloader = get_train_loader(train_hr_dir, batch_size=4,lr_size=64, scale=upscale_factor)
+    trainloader = get_train_loader(train_hr_dir, batch_size=4, lr_size=64, scale=upscale_factor)
     testloader = get_test_loader(test_hr_dir, batch_size=1)  # 测试时 batch_size 常用 1
 
     model = SimpleViTSR(patch_size=2, embed_dim=96, num_layers=10, num_heads=8, upscale_factor=upscale_factor,
                         window_size=8)
-    #checkpoint = torch.load("sr_epoch_20_2.pth", map_location="cpu")  # map_location 自动适配CPU/GPU
-    #model.load_state_dict(checkpoint)
+    checkpoint = torch.load("sr_epoch_60.pth", map_location="cpu")  # map_location 自动适配CPU/GPU
+    model.load_state_dict(checkpoint)
     criterion = nn.L1Loss()
     # 优化器
-    epochs = 80
+    epochs = 60
     optimizer = optim.Adam(
         model.parameters(),
         lr=2e-4,

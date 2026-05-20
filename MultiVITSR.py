@@ -152,9 +152,9 @@ if __name__ == '__main__':
     device = torch.device("cpu")
 
     # 配置
-    LR_SIZE = 128
+    LR_SIZE = 64
     UPSCALE = 4
-    PATCH_SIZE = 4
+    PATCH_SIZE = 2
 
     transform = transforms.Compose([
         transforms.ToTensor(),
@@ -177,7 +177,7 @@ if __name__ == '__main__':
         window_size=8,
         upscale_factor=UPSCALE
     ).to(device)
-    checkpoint = torch.load("sr_epoch_80.pth", map_location="cpu")  # map_location 自动适配CPU/GPU
+    checkpoint = torch.load("sr_epoch_60.pth", map_location="cpu")  # map_location 自动适配CPU/GPU
     model.load_state_dict(checkpoint)
     model.eval()
 
