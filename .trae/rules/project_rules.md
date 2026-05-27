@@ -105,6 +105,304 @@ web/
 
 ---
 
+## 📦 React组件组织规范
+
+### 组件分类原则
+
+#### 何时放入 `components/`（可复用组件）
+
+**判断标准：**
+
+| 条件 | 说明 | 示例 |
+|------|------|------|
+| **多处使用** | 在2个或以上页面/组件中使用 | Button、Modal、Card |
+| **独立功能** | 功能独立，不依赖特定页面上下文 | DataChart、ImageUpload |
+| **可配置** | 通过props配置，不硬编码业务逻辑 | Table、Form |
+| **无副作用** | 不直接调用API，数据通过props传入 | 纯展示组件 |
+
+**✅ 应放入 `components/` 的组件：**
+```
+components/
+├── common/
+│   ├── Button/          # 按钮组件（多处使用）
+│   ├── Modal/           # 模态框组件（多处使用）
+│   ├── Card/            # 卡片组件（多处使用）
+│   └── Loading/         # 加载组件（多处使用）
+└── charts/
+    ├── HeatmapChart/    # 热力图组件（独立功能）
+    ├── LineChart/       # 折线图组件（独立功能）
+    └── BarChart/        # 柱状图组件（独立功能）
+```
+
+**❌ 不应放入 `components/` 的组件：**
+- 只在单个页面使用的组件 → 放入对应页面文件夹
+- 依赖特定页面状态的组件 → 放入对应页面文件夹
+- 包含业务逻辑的组件 → 放入对应页面文件夹
+
+#### 何时放入 `pages/`（页面组件）
+
+**判断标准：**
+
+| 条件 | 说明 | 示例 |
+|------|------|------|
+| **路由对应** | 对应一个路由路径 | /heatmap → HeatmapPage |
+| **页面级状态** | 管理页面级状态和数据 | 页面数据获取、状态管理 |
+| **业务逻辑** | 包含特定业务逻辑 | 数据处理、API调用 |
+| **组合组件** | 组合多个可复用组件 | 页面布局、组件组合 |
+
+**✅ 应放入 `pages/` 的组件：**
+```
+pages/
+├── Heatmap/
+│   ├── index.tsx            # 页面主组件
+│   ├── index.module.css     # 页面样式
+│   ├── HeatmapHeader.tsx    # 页面特定组件
+│   ├── HeatmapSidebar.tsx   # 页面特定组件
+│   └── useHeatmapData.ts    # 页面特定Hook
+├── Analysis/
+│   ├── index.tsx
+│   ├── index.module.css
+│   └── AnalysisTabs.tsx
+└── Overview/
+    ├── index.tsx
+    └── index.module.css
+```
+
+---
+
+### 组件文件组织规范
+
+#### 文件夹结构（推荐）
+
+**可复用组件：**
+```
+components/
+└── charts/
+    └── HeatmapChart/           # 组件文件夹（PascalCase）
+        ├── index.tsx           # 组件主文件
+        ├── index.module.css    # 组件样式（与文件夹同名）
+        ├── HeatmapChart.types.ts    # 类型定义（可选）
+        └── useHeatmapChart.ts       # 组件Hook（可选）
+```
+
+**页面组件：**
+```
+pages/
+└── Heatmap/                    # 页面文件夹（PascalCase）
+    ├── index.tsx               # 页面主文件
+    ├── index.module.css        # 页面样式（与文件夹同名）
+    ├── HeatmapHeader.tsx       # 页面子组件
+    ├── HeatmapSidebar.tsx      # 页面子组件
+    └── useHeatmapData.ts       # 页面Hook
+```
+
+#### 文件命名规则
+
+| 文件类型 | 命名规则 | 示例 |
+|---------|---------|------|
+| **组件主文件** | `index.tsx` | `HeatmapChart/index.tsx` |
+| **组件样式** | `index.module.css` | `HeatmapChart/index.module.css` |
+| **类型定义** | `ComponentName.types.ts` | `HeatmapChart.types.ts` |
+| **组件Hook** | `useComponentName.ts` | `useHeatmapChart.ts` |
+| **子组件** | `SubComponentName.tsx` | `HeatmapHeader.tsx` |
+| **工具函数** | `camelCase.ts` | `formatData.ts` |
+
+#### 导入导出规范
+
+**组件导出（index.tsx）：**
+```typescript
+// ✅ 正确：默认导出组件
+import React from 'react';
+import styles from './index.module.css';
+
+interface HeatmapChartProps {
+  data: number[][];
+  title: string;
+}
+
+const HeatmapChart: React.FC<HeatmapChartProps> = ({ data, title }) => {
+  return (
+    <div className={styles.container}>
+      {/* 组件内容 */}
+    </div>
+  );
+};
+
+export default HeatmapChart;
+```
+
+**组件导入：**
+```typescript
+// ✅ 正确：从文件夹导入
+import HeatmapChart from '@/components/charts/HeatmapChart';
+import LineChart from '@/components/charts/LineChart';
+
+// ❌ 错误：从具体文件导入
+import HeatmapChart from '@/components/charts/HeatmapChart/index.tsx';
+```
+
+---
+
+### 组件开发最佳实践
+
+#### 组件职责划分
+
+**可复用组件（components/）：**
+```typescript
+// ✅ 正确：纯展示组件，数据通过props传入
+interface ChartProps {
+  data: ChartData[];
+  config: ChartConfig;
+}
+
+const LineChart: React.FC<ChartProps> = ({ data, config }) => {
+  // 纯渲染逻辑，不调用API
+  return <div>{/* 图表渲染 */}</div>;
+};
+
+// ❌ 错误：在可复用组件中调用API
+const LineChart: React.FC = () => {
+  const data = await fetch('/api/data'); // ❌ 不应在组件中调用API
+  return <div>{/* 图表渲染 */}</div>;
+};
+```
+
+**页面组件（pages/）：**
+```typescript
+// ✅ 正确：页面组件负责数据获取和状态管理
+const HeatmapPage: React.FC = () => {
+  const { data, loading, error } = useHeatmapData(); // 页面Hook获取数据
+  
+  if (loading) return <Loading />;
+  if (error) return <Error message={error} />;
+  
+  return (
+    <div>
+      <HeatmapHeader />
+      <HeatmapChart data={data} /> {/* 可复用组件 */}
+    </div>
+  );
+};
+```
+
+#### 组件拆分原则
+
+**何时拆分子组件：**
+
+| 条件 | 说明 | 操作 |
+|------|------|------|
+| **代码行数 > 200** | 组件过大，难以维护 | 拆分为多个子组件 |
+| **逻辑复杂** | 包含多个独立逻辑块 | 按逻辑拆分 |
+| **可独立测试** | 子部分可独立测试 | 拆分为独立组件 |
+| **可复用** | 子部分可复用 | 提取到components/ |
+
+**拆分示例：**
+```typescript
+// ❌ 错误：单文件过大（300+行）
+// pages/Heatmap/index.tsx
+
+// ✅ 正确：拆分为多个文件
+// pages/Heatmap/
+// ├── index.tsx           # 主组件（组合）
+// ├── HeatmapHeader.tsx   # 头部组件
+// ├── HeatmapSidebar.tsx  # 侧边栏组件
+// ├── HeatmapContent.tsx  # 内容组件
+// └── useHeatmapData.ts   # 数据Hook
+```
+
+---
+
+### 目录结构示例
+
+#### 完整项目结构
+```
+web/src/
+├── components/                    # 可复用组件
+│   ├── common/                    # 通用组件
+│   │   ├── Button/
+│   │   │   ├── index.tsx
+│   │   │   └── index.module.css
+│   │   ├── Modal/
+│   │   │   ├── index.tsx
+│   │   │   └── index.module.css
+│   │   ├── Card/
+│   │   │   ├── index.tsx
+│   │   │   └── index.module.css
+│   │   └── Loading/
+│   │       ├── index.tsx
+│   │       └── index.module.css
+│   └── charts/                    # 图表组件
+│       ├── HeatmapChart/
+│       │   ├── index.tsx
+│       │   ├── index.module.css
+│       │   └── useHeatmapChart.ts
+│       ├── LineChart/
+│       │   ├── index.tsx
+│       │   └── index.module.css
+│       └── BarChart/
+│           ├── index.tsx
+│           └── index.module.css
+├── pages/                         # 页面组件
+│   ├── Heatmap/
+│   │   ├── index.tsx
+│   │   ├── index.module.css
+│   │   ├── HeatmapHeader.tsx
+│   │   ├── HeatmapSidebar.tsx
+│   │   └── useHeatmapData.ts
+│   ├── Analysis/
+│   │   ├── index.tsx
+│   │   ├── index.module.css
+│   │   └── AnalysisTabs.tsx
+│   └── Overview/
+│       ├── index.tsx
+│       └── index.module.css
+├── hooks/                         # 全局Hooks
+│   ├── useMockData.ts
+│   └── useTheme.ts
+├── services/                      # API服务
+│   └── mockService.ts
+├── types/                         # 类型定义
+│   ├── chart.ts
+│   └── heatmap.ts
+├── utils/                         # 工具函数
+│   ├── format.ts
+│   └── validation.ts
+├── assets/                        # 静态资源
+│   └── images/
+├── styles/                        # 全局样式
+│   ├── theme.ts
+│   └── global.css
+├── App.tsx
+└── main.tsx
+```
+
+---
+
+### 组件开发检查清单
+
+#### 创建组件前检查
+- [ ] 组件是否可复用？（2处或以上使用）
+- [ ] 组件是否独立？（不依赖特定页面）
+- [ ] 组件是否可配置？（通过props配置）
+- [ ] 确定组件位置：`components/` 或 `pages/`
+
+#### 创建组件时检查
+- [ ] 文件夹命名：PascalCase（如 `HeatmapChart/`）
+- [ ] 主文件命名：`index.tsx`
+- [ ] 样式文件命名：`index.module.css`
+- [ ] 类型定义：使用TypeScript interface
+- [ ] 导出方式：默认导出
+- [ ] 样式方式：CSS Modules
+
+#### 组件完成后检查
+- [ ] 无内联样式（除动态样式）
+- [ ] 无硬编码业务逻辑
+- [ ] Props类型完整
+- [ ] 可独立测试
+- [ ] 导入路径正确（从文件夹导入）
+
+---
+
 ## 📊 可视化开发规范
 
 ### AntV使用指南

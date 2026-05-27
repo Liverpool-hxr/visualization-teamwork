@@ -1,0 +1,8 @@
+- [x] Checkpoint 1: src/styles/theme.ts 文件存在且包含完整的Ant Design暗色主题配置
+- [x] Checkpoint 2: src/styles/global.css 文件存在且包含全局样式重置
+- [x] Checkpoint 3: src/router/index.tsx 文件存在且配置了三个页面路由
+- [x] Checkpoint 4: vite.config.ts 配置了正确的路径别名
+- [x] Checkpoint 5: tsconfig.app.json 配置了正确的paths路径映射
+- [x] Checkpoint 6: main.tsx 正确引入主题和全局样式
+- [x] Checkpoint 7: npm run build 命令执行成功，无编译错误
+- [x] Checkpoint 8: npm run lint 命令执行成功，无代码检查错误
