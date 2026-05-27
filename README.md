@@ -348,23 +348,7 @@ Body: PNG 二进制数据
 }
 ```
 
----
 
-### `GET /analysis/degrade_bar`
-
-各层多维退化指标（行方差、稀疏度、Gini 系数）。
-
-**成功响应 `200`**
-
-```json
-{
-  "layers": [
-    { "layer": 0, "row_var": 0.03, "sparsity": 0.62, "gini": 0.41 }
-  ]
-}
-```
-
----
 
 ### `GET /analysis/3d_bar`
 
@@ -380,118 +364,9 @@ Body: PNG 二进制数据
 }
 ```
 
----
 
-### `GET /analysis/layer_similarity`
 
-层间余弦相似度矩阵（L × L）。
 
-**成功响应 `200`**
-
-```json
-{
-  "cosine": [
-    [1.0, 0.82, "..."],
-    [0.82, 1.0, "..."]
-  ]
-}
-```
-
----
-
-### `GET /analysis/head_similarity`
-
-各层内头间余弦相似度矩阵（H × H）。
-
-**成功响应 `200`**
-
-```json
-{
-  "layers": [
-    {
-      "layer": 0,
-      "cosine": [[1.0, 0.61, "..."], [0.61, 1.0, "..."]]
-    }
-  ]
-}
-```
-
----
-
-### `GET /analysis/patch_similarity`
-
-指定层和头的 Patch 级余弦相似度矩阵（N × N）。
-
-**查询参数**
-
-| 参数名 | 类型 | 默认值 | 说明 |
-|---|---|---|---|
-| `layer_id` | integer | `0` | 目标层索引 |
-| `head_id` | integer | `0` | 目标头索引 |
-
-**成功响应 `200`**
-
-```json
-{
-  "suffix": "L0-H0",
-  "patch_cos_sim": [[1.0, 0.45, "..."], [0.45, 1.0, "..."]]
-}
-```
-
----
-
-### `GET /analysis/advanced_stats`
-
-高级统计分析：有效秩矩阵（L × H）、CKA 流、PCA 方差等。
-
-**成功响应 `200`**
-
-```json
-{
-  "effective_rank": [
-    [5.1, 4.9, "..."],
-    [6.0, 5.5, "..."]
-  ]
-}
-```
-
----
-
-### `GET /analysis/head_wasserstein`
-
-各层头间注意力分布的平均 Wasserstein 距离。
-
-**成功响应 `200`**
-
-```json
-{
-  "mean_wd_over_layers": [0.12, 0.18, 0.09, "..."]
-}
-```
-
----
-
-### `GET /analysis/all`
-
-批量接口，一次返回所有分析结果。对应前端「全部加载」按钮，可显著减少请求次数。
-
-**成功响应 `200`**
-
-```json
-{
-  "kl_locality":             { "...": "..." },
-  "funnel":                  { "...": "..." },
-  "degrade_bar":             { "...": "..." },
-  "3d_bar":                  { "...": "..." },
-  "layer_similarity":        { "...": "..." },
-  "head_similarity":         { "...": "..." },
-  "patch_similarity_example":{ "...": "..." },
-  "advanced_stats":          { "...": "..." },
-  "head_wasserstein":        { "...": "..." }
-}
-```
-
-> **注意：** 响应中的顶层键名须与前端 `loadAllAna()` 函数内 `keyMap` 的映射保持一致，否则图表无法渲染。
 
 ---
 
@@ -546,7 +421,6 @@ multivit-sr/
 ├── MultiVITSR.py       # 模型定义 + 独立推理脚本
 ├── VIT.py              # ViT 基础模块（PatchEmbedding、Transformer 层）
 ├── SR-train.py         # 训练流程
-├── HMHT.py             # 局部位置编码模块（LEPE1D）— 运行必需
 ├── sr_epoch_80.pth     # 预训练权重 — 推理必需（不含于仓库）
 └── README_zh.md
 ```
