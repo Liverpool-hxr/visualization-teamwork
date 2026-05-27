@@ -1,0 +1,71 @@
+{
+  "layers": [
+    {
+      "layer": 0,
+      "row_var_rel": 100.0,
+      "sparsity_rel": 100.0,
+      "gini_rel": 100.0
+    },
+    {
+      "layer": 1,
+      "row_var_rel": 109.37,
+      "sparsity_rel": 96.38,
+      "gini_rel": 101.71
+    },
+    {
+      "layer": 2,
+      "row_var_rel": 110.61,
+      "sparsity_rel": 100.47,
+      "gini_rel": 106.17
+    },
+    {
+      "layer": 3,
+      "row_var_rel": 113.46,
+      "sparsity_rel": 102.08,
+      "gini_rel": 110.51
+    },
+    {
+      "layer": 4,
+      "row_var_rel": 119.76,
+      "sparsity_rel": 102.38,
+      "gini_rel": 111.85
+    },
+    {
+      "layer": 5,
+      "row_var_rel": 120.87,
+      "sparsity_rel": 106.45,
+      "gini_rel": 116.89
+    },
+    {
+      "layer": 6,
+      "row_var_rel": 128.52,
+      "sparsity_rel": 104.74,
+      "gini_rel": 118.93
+    },
+    {
+      "layer": 7,
+      "row_var_rel": 137.85,
+      "sparsity_rel": 108.9,
+      "gini_rel": 124.21
+    },
+    {
+      "layer": 8,
+      "row_var_rel": 148.6,
+      "sparsity_rel": 110.45,
+      "gini_rel": 124.73
+    },
+    {
+      "layer": 9,
+      "row_var_rel": 151.0,
+      "sparsity_rel": 114.85,
+      "gini_rel": 128.51
+    }
+  ],
+  "num_layers": 10,
+  "num_heads": 8,
+  "metrics": [
+    "row_var",
+    "sparsity",
+    "gini"
+  ]
+}

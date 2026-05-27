@@ -2,7 +2,7 @@
 eval_sr.py —— 超分模型评估 (文件夹配对，适配 Urban100 命名)
 用法: python eval_sr.py --model sr.pth --lr_dir ./LR --hr_dir ./HR --scale 4
 """
-import os, re, argparse
+import os, re
 import torch
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
@@ -106,15 +106,15 @@ def evaluate(model, loader, device):
 
 
 if __name__ == '__main__':
-    from MultiVITSR import SimpleViTSR
+    from backend.MultiVITSR import SimpleViTSR
 
     device = 'cpu'  # ← 自动选择
 
-    model = SimpleViTSR(patch_size=4, embed_dim=96, num_layers=10, num_heads=8, upscale_factor=4,
+    model = SimpleViTSR(patch_size=2, embed_dim=96, num_layers=10, num_heads=8, upscale_factor=4,
                         window_size=8)
 
     # 直接加载 state_dict
-    state_dict = torch.load("sr_epoch_80.pth", map_location='cpu')
+    state_dict = torch.load("sr_epoch_60.pth", map_location='cpu')
     model.load_state_dict(state_dict)
     model.to(device)  # ← 关键！移到 GPU
     model.eval()

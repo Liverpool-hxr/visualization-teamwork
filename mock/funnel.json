@@ -1,0 +1,56 @@
+{
+  "layers": [
+    {
+      "layer": 0,
+      "effective_rank_rel": 100.0,
+      "singular_energy_rel": 100.0
+    },
+    {
+      "layer": 1,
+      "effective_rank_rel": 88.68,
+      "singular_energy_rel": 93.69
+    },
+    {
+      "layer": 2,
+      "effective_rank_rel": 81.0,
+      "singular_energy_rel": 86.96
+    },
+    {
+      "layer": 3,
+      "effective_rank_rel": 69.58,
+      "singular_energy_rel": 83.06
+    },
+    {
+      "layer": 4,
+      "effective_rank_rel": 61.37,
+      "singular_energy_rel": 74.49
+    },
+    {
+      "layer": 5,
+      "effective_rank_rel": 52.41,
+      "singular_energy_rel": 69.51
+    },
+    {
+      "layer": 6,
+      "effective_rank_rel": 48.1,
+      "singular_energy_rel": 61.27
+    },
+    {
+      "layer": 7,
+      "effective_rank_rel": 43.35,
+      "singular_energy_rel": 55.17
+    },
+    {
+      "layer": 8,
+      "effective_rank_rel": 39.64,
+      "singular_energy_rel": 49.42
+    },
+    {
+      "layer": 9,
+      "effective_rank_rel": 36.43,
+      "singular_energy_rel": 45.21
+    }
+  ],
+  "num_layers": 10,
+  "num_heads": 8
+}

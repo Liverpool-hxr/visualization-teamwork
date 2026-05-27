@@ -4,17 +4,13 @@ import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import torchvision
 import torchvision.transforms as transforms
 from PIL import Image
-from torch.utils.data import Dataset, DataLoader, random_split
+from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 import pandas as pd
 import matplotlib.pyplot as plt
 import torchmetrics
-import torch.nn.functional as F
-from torch.optim.lr_scheduler import CosineAnnealingLR, LinearLR, SequentialLR, CosineAnnealingWarmRestarts, \
-    ReduceLROnPlateau
 import numpy as np
 
 
@@ -359,7 +355,7 @@ def train(model, trainloader, testloader, criterion, optimizer, scheduler, devic
 # 主函数
 # -----------------------------
 if __name__ == "__main__":
-    from MultiVITSR import SimpleViTSR  # 你之前写的模型
+    from backend.MultiVITSR import SimpleViTSR  # 你之前写的模型
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     train_hr_dir = r'D:\Flickr2K'  # 训练集 HR 文件夹
