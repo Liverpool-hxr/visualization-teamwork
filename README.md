@@ -4,6 +4,58 @@
 
 ---
 
+## 🚀 快速开始
+
+### 前端开发环境配置
+
+如果只需要开发或运行前端界面（Attention Inspector 可视化界面）：
+
+#### 环境要求
+- **Node.js**: v18.x 或 v20.x LTS（推荐使用 [nvm](https://github.com/nvm-sh/nvm) 管理 Node.js 版本）
+- **npm**: v9.x 或 v10.x（随 Node.js 自动安装）
+
+#### 安装步骤
+
+**1. 使用 nvm 安装 Node.js（推荐）**
+
+```bash
+# Windows 用户推荐使用 nvm-windows
+# 下载安装：https://github.com/coreybutler/nvm-windows/releases
+
+nvm install 20
+nvm use 20
+```
+
+**2. 验证 Node.js 和 npm**
+
+```bash
+node --version    # 应显示 v18.x.x 或 v20.x.x
+npm --version     # 应显示 9.x.x 或 10.x.x
+```
+
+**3. 进入前端目录并安装依赖**
+
+```bash
+cd web
+npm install
+```
+
+**4. 启动开发服务器**
+
+```bash
+npm run dev
+```
+
+前端界面将在 `http://localhost:5173` 运行。
+
+> ⚠️ **注意**：前端需要与后端服务配合使用，请先启动 Python 后端服务（参见下方 [启动后端服务](#启动后端服务)）。
+
+#### 前端详细文档
+
+前端开发的详细说明、技术栈、组件规范、API 集成等请参阅：[web/README.md](web/README.md)
+
+---
+
 ## 目录
 
 - [项目简介](#项目简介)
