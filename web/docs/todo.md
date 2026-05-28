@@ -10,12 +10,12 @@
 
 | 序号 | 任务 | 状态 | 优先级 | 依赖 |
 |------|------|------|--------|------|
-| P1-01 | 安装依赖：antd, @ant-design/icons, @antv/g2, @antv/g2plot, react-router-dom | ⏳ pending | 高 | - |
-| P1-02 | 安装工具库：dayjs, lodash | ⏳ pending | P1-01 |
-| P1-03 | 创建主题配置 src/styles/theme.ts | ⏳ pending | P1-01 |
-| P1-04 | 创建全局样式 src/styles/global.css | ⏳ pending | P1-03 |
-| P1-05 | 创建路由配置 src/router/index.tsx | ⏳ pending | P1-01 |
-| P1-06 | 配置路径别名 vite.config.ts | ⏳ pending | - |
+| P1-01 | 安装依赖：antd, @ant-design/icons, @antv/g2, @antv/g2plot, react-router-dom | ✅ completed | 高 | - |
+| P1-02 | 安装工具库：dayjs, lodash | ✅ completed | P1-01 |
+| P1-03 | 创建主题配置 src/styles/theme.ts | ✅ completed | P1-01 |
+| P1-04 | 创建全局样式 src/styles/global.css | ✅ completed | P1-03 |
+| P1-05 | 创建路由配置 src/router/index.tsx | ✅ completed | P1-01 |
+| P1-06 | 配置路径别名 vite.config.ts | ✅ completed | - |
 
 ---
 
@@ -51,11 +51,11 @@
 
 | 序号 | 任务 | 状态 | 优先级 | 依赖 |
 |------|------|------|--------|------|
-| P4-01 | 创建 KLLocalityChart 组件 src/components/charts/KLLocalityChart/ | ⏳ pending | 高 | P3-04 |
-| P4-02 | 创建 FunnelChart 组件 src/components/charts/FunnelChart/ | ⏳ pending | 高 | P3-04 |
-| P4-03 | 创建 DegradeChart 组件 src/components/charts/DegradeChart/ | ⏳ pending | 高 | P3-04 |
-| P4-04 | 创建 LayerSimilarityChart 组件 src/components/charts/LayerSimilarityChart/ | ⏳ pending | 高 | P3-04 |
-| P4-05 | 创建 HeadSimilarityChart 组件 src/components/charts/HeadSimilarityChart/ | ⏳ pending | 高 | P3-04 |
+| P4-01 | 创建 KLLocalityChart 组件 src/components/charts/KLLocalityChart/ | ✅ completed | 高 | P3-04 |
+| P4-02 | 创建 FunnelChart 组件 src/components/charts/FunnelChart/ | ✅ completed | 高 | P3-04 |
+| P4-03 | 创建 DegradeChart 组件 src/components/charts/DegradeChart/ | ✅ completed | 高 | P3-04 |
+| P4-04 | 创建 LayerSimilarityChart 组件 src/components/charts/LayerSimilarityChart/ | ✅ completed | 高 | P3-04 |
+| P4-05 | 创建 HeadSimilarityChart 组件 src/components/charts/HeadSimilarityChart/ | ✅ completed | 高 | P3-04 |
 | P4-06 | 创建 PatchSimilarityChart 组件 src/components/charts/PatchSimilarityChart/ | ⏳ pending | 中 | P4-04 |
 | P4-07 | 创建 AdvancedStatsChart 组件 src/components/charts/AdvancedStatsChart/ | ⏳ pending | 中 | P3-04 |
 | P4-08 | 创建 WassersteinChart 组件 src/components/charts/WassersteinChart/ | ⏳ pending | 低 | P3-04 |
