@@ -26,6 +26,22 @@ export interface FunnelData {
   num_heads: number;
 }
 
+export type ThreeDBarMetric = 'row_var' | 'sparsity' | 'gini';
+
+export interface ThreeDBarPerLayer {
+  layer: number;
+  row_var_rel: number;
+  sparsity_rel: number;
+  gini_rel: number;
+}
+
+export interface ThreeDBarData {
+  layers: ThreeDBarPerLayer[];
+  num_layers: number;
+  num_heads: number;
+  metrics: ThreeDBarMetric[];
+}
+
 export interface HeatmapDataPoint {
   x: number;
   y: number;

@@ -35,7 +35,7 @@ const Heatmap: React.FC = () => {
   return (
     <div className={styles.page}>
       <Row gutter={16}>
-        <Col span={12}>
+        <Col xs={24} lg={12}>
           <Card
             title="Image Upload"
             className={styles.uploadCard}
@@ -61,7 +61,7 @@ const Heatmap: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col span={12}>
+        <Col xs={24} lg={12}>
           <Card title="Attention Tree">
             {treeStats && <AttentionTree data={treeStats.layers} />}
           </Card>

@@ -1,9 +1,10 @@
 import type { AttentionTreeData } from '@/types/attention';
-import type { KLLocalityData, FunnelData } from '@/types/chart';
+import type { KLLocalityData, FunnelData, ThreeDBarData } from '@/types/chart';
 
 import treeStatsUrl from '../../../mock/tree_stats.json?url';
 import klLocalityUrl from '../../../mock/kl_locality.json?url';
 import funnelUrl from '../../../mock/funnel.json?url';
+import threeDBarUrl from '../../../mock/3d_bar.json?url';
 import visualizeImageUrl from '../../../mock/visualize.jpg?url';
 
 const fetchJsonFromUrl = async <T>(url: string): Promise<T> => {
@@ -27,21 +28,27 @@ export const mockService = {
     return fetchJsonFromUrl<FunnelData>(funnelUrl);
   },
 
+  async get3DBar(): Promise<ThreeDBarData> {
+    return fetchJsonFromUrl<ThreeDBarData>(threeDBarUrl);
+  },
+
   async getVisualizeImageUrl(): Promise<string> {
     return visualizeImageUrl;
   },
 
   async getAllData() {
-    const [treeStats, klLocality, funnel, visualizeUrl] = await Promise.all([
+    const [treeStats, klLocality, funnel, threeDBar, visualizeUrl] = await Promise.all([
       this.getTreeStats(),
       this.getKLLocality(),
       this.getFunnel(),
+      this.get3DBar(),
       this.getVisualizeImageUrl(),
     ]);
     return {
       treeStats,
       klLocality,
       funnel,
+      threeDBar,
       visualizeImageUrl: visualizeUrl,
     };
   },

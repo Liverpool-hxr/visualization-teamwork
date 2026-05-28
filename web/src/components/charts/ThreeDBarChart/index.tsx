@@ -1,23 +1,31 @@
 import React, { useEffect, useRef } from 'react';
-import { Line } from '@antv/g2plot';
-import type { KLLocalityData, ChartConfig } from '@/types/chart';
+import { Column } from '@antv/g2plot';
+import type { ChartConfig, ThreeDBarData } from '@/types/chart';
 import styles from './index.module.css';
 
-interface KLLocalityChartProps {
-  data: KLLocalityData;
+interface ThreeDBarChartProps {
+  data: ThreeDBarData;
   config?: ChartConfig;
   width?: number;
   height?: number;
+  baseline?: number;
 }
 
-const KLLocalityChart: React.FC<KLLocalityChartProps> = ({
+interface ChartDatum {
+  layer: number;
+  metric: 'row_var_rel' | 'sparsity_rel' | 'gini_rel';
+  value: number;
+}
+
+const ThreeDBarChart: React.FC<ThreeDBarChartProps> = ({
   data,
   config = {},
   width,
-  height = 400,
+  height = 360,
+  baseline = 100,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const chartRef = useRef<Line | null>(null);
+  const chartRef = useRef<Column | null>(null);
   const autoFit = width === undefined;
 
   useEffect(() => {
@@ -31,44 +39,66 @@ const KLLocalityChart: React.FC<KLLocalityChartProps> = ({
           chartRef.current.destroy();
         }
       } catch {
-        // Chart container may already be removed
+        void 0;
       }
       chartRef.current = null;
     }
 
-    const klData = data.layers.map((layer) => ({
-      layer: layer.layer,
-      type: 'KL Divergence',
-      value: layer.kl_mean,
-    }));
+    const chartData: ChartDatum[] = data.layers.flatMap((layer) => ([
+      { layer: layer.layer, metric: 'row_var_rel', value: layer.row_var_rel },
+      { layer: layer.layer, metric: 'sparsity_rel', value: layer.sparsity_rel },
+      { layer: layer.layer, metric: 'gini_rel', value: layer.gini_rel },
+    ]));
 
-    const localityData = data.layers.map((layer) => ({
-      layer: layer.layer,
-      type: 'Locality',
-      value: layer.locality_mean,
-    }));
+    const values = chartData.map((d) => d.value);
+    const maxValue = Math.max(baseline, ...values);
+    const minValue = Math.min(baseline, ...values);
 
-    const chartData = [...klData, ...localityData];
-
-    const chart = new Line(container, {
+    const chart = new Column(container, {
       data: chartData,
       ...(autoFit ? { autoFit: true } : { width }),
       height,
+      isGroup: true,
       xField: 'layer',
       yField: 'value',
-      seriesField: 'type',
-      smooth: true,
-      color: ['#5B8FF9', '#5AD8A6'],
+      seriesField: 'metric',
+      color: ['#5B8FF9', '#5AD8A6', '#F6BD16'],
       meta: {
         layer: { type: 'cat', alias: config.xAxisLabel || 'Layer' },
-        value: { alias: config.yAxisLabel || 'Value' },
+        value: { alias: config.yAxisLabel || 'Relative (%)' },
+        metric: {
+          formatter: (v: string) => {
+            if (v === 'row_var_rel') return 'row_var';
+            if (v === 'sparsity_rel') return 'sparsity';
+            if (v === 'gini_rel') return 'gini';
+            return v;
+          },
+        },
       },
       tooltip: config.showTooltip !== false ? {} : undefined,
       legend: config.showLegend !== false ? {} : undefined,
       yAxis: {
-        min: 0,
-        max: 0.5,
+        min: Math.max(0, Math.floor((minValue - 10) / 10) * 10),
+        max: Math.ceil((maxValue + 10) / 10) * 10,
+        label: {
+          formatter: (v: string) => `${v}%`,
+        },
       },
+      annotations: [
+        {
+          type: 'line',
+          start: ['min', baseline],
+          end: ['max', baseline],
+          style: { stroke: '#8c8c8c', lineDash: [4, 4], lineWidth: 1 },
+        },
+        {
+          type: 'text',
+          position: ['min', baseline],
+          content: `baseline=${baseline}`,
+          offsetY: -8,
+          style: { fill: '#595959', fontSize: 12 },
+        },
+      ],
     });
 
     chart.render();
@@ -101,12 +131,12 @@ const KLLocalityChart: React.FC<KLLocalityChartProps> = ({
             chartRef.current.destroy();
           }
         } catch {
-          // DOM may already be unmounted
+          void 0;
         }
         chartRef.current = null;
       }
     };
-  }, [data, config, width, height, autoFit]);
+  }, [autoFit, baseline, config, data, height, width]);
 
   return (
     <div className={styles.chartContainer}>
@@ -116,4 +146,4 @@ const KLLocalityChart: React.FC<KLLocalityChartProps> = ({
   );
 };
 
-export default KLLocalityChart;
+export default ThreeDBarChart;

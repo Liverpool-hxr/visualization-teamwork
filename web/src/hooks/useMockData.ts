@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { mockService } from '@/services/mockService';
 import type { AttentionTreeData } from '@/types/attention';
-import type { KLLocalityData, FunnelData } from '@/types/chart';
+import type { KLLocalityData, FunnelData, ThreeDBarData } from '@/types/chart';
 
 export interface AllMockData {
   treeStats: AttentionTreeData;
   klLocality: KLLocalityData;
   funnel: FunnelData;
+  threeDBar: ThreeDBarData;
   visualizeImageUrl: string;
 }
 
@@ -14,6 +15,7 @@ export interface MockDataMap {
   treeStats: AttentionTreeData;
   klLocality: KLLocalityData;
   funnel: FunnelData;
+  threeDBar: ThreeDBarData;
   visualizeImageUrl: string;
   all: AllMockData;
 }
@@ -31,6 +33,7 @@ const fetchDataMap: { [K in DataType]: () => Promise<MockDataMap[K]> } = {
   treeStats: () => mockService.getTreeStats(),
   klLocality: () => mockService.getKLLocality(),
   funnel: () => mockService.getFunnel(),
+  threeDBar: () => mockService.get3DBar(),
   visualizeImageUrl: () => mockService.getVisualizeImageUrl(),
   all: () => mockService.getAllData(),
 };
@@ -92,6 +95,10 @@ export const useKLLocality = (): UseMockDataResult<KLLocalityData> => {
 
 export const useFunnel = (): UseMockDataResult<FunnelData> => {
   return useMockData('funnel');
+};
+
+export const use3DBar = (): UseMockDataResult<ThreeDBarData> => {
+  return useMockData('threeDBar');
 };
 
 export const useVisualizeImageUrl = (): UseMockDataResult<string> => {

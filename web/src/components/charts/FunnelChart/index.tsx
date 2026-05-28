@@ -13,11 +13,12 @@ interface FunnelChartProps {
 const FunnelChart: React.FC<FunnelChartProps> = ({
   data,
   config = {},
-  width = 600,
-  height = 400
+  width,
+  height = 400,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<Line | null>(null);
+  const autoFit = width === undefined;
 
   useEffect(() => {
     const container = containerRef.current;
@@ -51,7 +52,7 @@ const FunnelChart: React.FC<FunnelChartProps> = ({
 
     const chart = new Line(container, {
       data: chartData,
-      width,
+      ...(autoFit ? { autoFit: true } : { width }),
       height,
       xField: 'layer',
       yField: 'value',
@@ -76,7 +77,26 @@ const FunnelChart: React.FC<FunnelChartProps> = ({
     chart.render();
     chartRef.current = chart;
 
+    const observer = autoFit
+      ? new ResizeObserver((entries) => {
+          const entry = entries[0];
+          const nextWidth = entry?.contentRect?.width ?? 0;
+          if (nextWidth <= 0) return;
+          const resizable = chartRef.current as unknown as {
+            changeSize?: (w: number, h?: number) => void;
+          } | null;
+          resizable?.changeSize?.(nextWidth, height);
+        })
+      : null;
+
+    if (observer) {
+      observer.observe(container);
+    }
+
     return () => {
+      if (observer) {
+        observer.disconnect();
+      }
       if (chartRef.current) {
         try {
           const chartContainer = (chartRef.current as unknown as { container?: HTMLElement }).container;
@@ -89,7 +109,7 @@ const FunnelChart: React.FC<FunnelChartProps> = ({
         chartRef.current = null;
       }
     };
-  }, [data, config, width, height]);
+  }, [data, config, width, height, autoFit]);
 
   return (
     <div className={styles.chartContainer}>

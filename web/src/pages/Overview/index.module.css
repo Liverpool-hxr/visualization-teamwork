@@ -1,0 +1,22 @@
+.page {
+  padding: 24px;
+}
+
+.title {
+  margin: 0 0 24px 0;
+  font-size: 28px;
+  font-weight: 600;
+  color: inherit;
+}
+
+.section {
+  margin-bottom: 24px;
+}
+
+.tableWrap {
+  margin-top: 16px;
+}
+
+.treeStatsGrid {
+  margin-bottom: 16px;
+}
