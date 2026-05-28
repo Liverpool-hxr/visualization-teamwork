@@ -3,14 +3,14 @@ import { Spin } from 'antd';
 import styles from './index.module.css';
 
 interface LoadingProps {
-  tip?: string;
-  size?: 'small' | 'default' | 'large';
+  description?: string;
+  size?: 'small' | 'medium' | 'large';
 }
 
-const Loading: React.FC<LoadingProps> = ({ tip = 'Loading...', size = 'default' }) => {
+const Loading: React.FC<LoadingProps> = ({ description = 'Loading...', size = 'medium' }) => {
   return (
     <div className={styles.container}>
-      <Spin size={size} tip={tip} className={styles.spin} />
+      <Spin size={size} description={description} className={styles.spin} />
     </div>
   );
 };

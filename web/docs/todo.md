@@ -35,15 +35,15 @@
 
 | 序号 | 任务 | 状态 | 优先级 | 依赖 |
 |------|------|------|--------|------|
-| P3-01 | 创建类型定义 src/types/attention.ts | ⏳ pending | 高 | - |
-| P3-02 | 创建类型定义 src/types/chart.ts | ⏳ pending | 高 | - |
-| P3-03 | 创建 Mock 服务 src/services/mockService.ts | ⏳ pending | 高 | P3-01, P3-02 |
-| P3-04 | 创建 useMockData Hook src/hooks/useMockData.ts | ⏳ pending | 高 | P3-03 |
-| P3-05 | 创建 ImageUpload 组件 src/components/upload/ImageUpload/ | ⏳ pending | 高 | P2-03, P3-04 |
-| P3-06 | 创建 AttentionTree 组件 src/components/tree/AttentionTree/ | ⏳ pending | 高 | P2-03, P3-04 |
-| P3-07 | 创建 TreeNode 组件 src/components/tree/AttentionTree/TreeNode.tsx | ⏳ pending | 高 | P3-06 |
-| P3-08 | 创建 PatchGrid 组件 src/components/tree/AttentionTree/PatchGrid.tsx | ⏳ pending | 高 | P3-06 |
-| P3-09 | 创建 HeatmapChart 组件 src/components/charts/HeatmapChart/ | ⏳ pending | 高 | P3-04 |
+| P3-01 | 创建类型定义 src/types/attention.ts | ✅ completed | 高 | - |
+| P3-02 | 创建类型定义 src/types/chart.ts | ✅ completed | 高 | - |
+| P3-03 | 创建 Mock 服务 src/services/mockService.ts | ✅ completed | 高 | P3-01, P3-02 |
+| P3-04 | 创建 useMockData Hook src/hooks/useMockData.ts | ✅ completed | 高 | P3-03 |
+| P3-05 | 创建 ImageUpload 组件 src/components/upload/ImageUpload/ | ✅ completed | 高 | P2-03, P3-04 |
+| P3-06 | 创建 AttentionTree 组件 src/components/tree/AttentionTree/ | ✅ completed | 高 | P2-03, P3-04 |
+| P3-07 | 创建 TreeNode 组件 src/components/tree/AttentionTree/TreeNode.tsx | ✅ completed | 高 | P3-06 |
+| P3-08 | 创建 PatchGrid 组件 src/components/tree/AttentionTree/PatchGrid.tsx | ✅ completed | 高 | P3-06 |
+| P3-09 | 创建 HeatmapChart 组件 src/components/charts/HeatmapChart/ | ✅ completed | 高 | P3-04 |
 
 ---
 
@@ -150,6 +150,6 @@
 - [ ] 响应式适配正常
 
 ### 代码质量
-- [ ] ESLint检查通过
-- [ ] TypeScript无错误
-- [ ] 代码符合规范
+- [x] ESLint检查通过
+- [x] TypeScript无错误
+- [x] 代码符合规范
