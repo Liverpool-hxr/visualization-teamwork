@@ -66,11 +66,11 @@
 
 | 序号 | 任务 | 状态 | 优先级 | 依赖 |
 |------|------|------|--------|------|
-| P5-01 | 创建 Heatmap 页面 src/pages/Heatmap/ | ⏳ pending | 高 | P3-05, P3-06, P3-09 |
-| P5-02 | 创建 Analysis 页面 src/pages/Analysis/ | ⏳ pending | 高 | P4-01 ~ P4-05 |
-| P5-03 | 创建 Overview 页面 src/pages/Overview/ | ⏳ pending | 中 | P2-01 |
-| P5-04 | 更新 App.tsx 集成路由 | ⏳ pending | P1-05, P5-01 ~ P5-03 |
-| P5-05 | 更新 main.tsx 配置主题 | ⏳ pending | P1-03, P5-04 |
+| P5-01 | 创建 Heatmap 页面 src/pages/Heatmap/ | ✅ completed | 高 | P3-05, P3-06, P3-09 |
+| P5-02 | 创建 Analysis 页面 src/pages/Analysis/ | ✅ completed | 高 | P4-01 ~ P4-05 |
+| P5-03 | 创建 Overview 页面 src/pages/Overview/ | ✅ completed | 中 | P2-01 |
+| P5-04 | 更新 App.tsx 集成路由 | ✅ completed | P1-05, P5-01 ~ P5-03 |
+| P5-05 | 更新 main.tsx 配置主题 | ✅ completed | P1-03, P5-04 |
 
 ---
 
