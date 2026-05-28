@@ -61,8 +61,8 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, isExpanded, onToggle, depth }
         </div>
       </div>
       {hasChildren && (
-        <div className={styles.childrenWrapper}>
-          <div className={isExpanded ? styles.childrenContent : styles.collapsed}>
+        <div className={`${styles.childrenWrapper} ${isExpanded ? styles.expanded : ''}`}>
+          <div className={styles.childrenContent}>
             {node.children?.map((child) => (
               <TreeNode
                 key={child.id}

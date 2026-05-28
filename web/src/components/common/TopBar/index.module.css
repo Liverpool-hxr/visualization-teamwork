@@ -3,26 +3,44 @@
   justify-content: space-between;
   align-items: center;
   padding: 0 24px;
-  background: #161b22;
-  border-bottom: 1px solid #30363d;
-  height: 64px;
+  background: linear-gradient(135deg, #1a1f36 0%, #0d1117 100%);
+  border-bottom: 1px solid #21262d;
 }
 
-.logo {
+.leftSection {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
+.menuButton {
+  display: none;
+  color: #fff;
+  background: transparent;
+  border: none;
+}
+
+@media (max-width: 768px) {
+  .menuButton {
+    display: flex;
+  }
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .logoIcon {
   font-size: 24px;
-  color: #00d4aa;
+  color: #667eea;
 }
 
 .title {
   font-size: 18px;
   font-weight: 600;
-  color: #e8edf5;
+  color: #fff;
 }
 
 .userInfo {
@@ -32,11 +50,25 @@
 }
 
 .userIcon {
-  font-size: 20px;
+  font-size: 18px;
   color: #8b949e;
 }
 
 .userName {
   font-size: 14px;
   color: #8b949e;
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 0 12px;
+  }
+  
+  .title {
+    font-size: 16px;
+  }
+  
+  .userName {
+    display: none;
+  }
 }

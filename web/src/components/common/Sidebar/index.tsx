@@ -1,10 +1,8 @@
 import React from 'react';
-import { Layout, Menu } from 'antd';
+import { Menu } from 'antd';
 import { HeatMapOutlined, BarChartOutlined, LayoutOutlined } from '@ant-design/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styles from './index.module.css';
-
-const { Sider } = Layout;
 
 type MenuItemType = {
   key: string;
@@ -34,7 +32,11 @@ const menuItems: MenuItemType[] = [
   },
 ];
 
-const Sidebar: React.FC = () => {
+interface SidebarProps {
+  collapsed?: boolean;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ collapsed = false }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const currentKey = location.pathname.replace('/', '') || 'heatmap';
@@ -47,19 +49,18 @@ const Sidebar: React.FC = () => {
   };
 
   return (
-    <Sider className={styles.sider} width={200} theme="dark">
-      <Menu
-        mode="inline"
-        selectedKeys={[currentKey]}
-        onClick={handleMenuClick}
-        className={styles.menu}
-        items={menuItems.map((item) => ({
-          key: item.key,
-          label: item.label,
-          icon: item.icon,
-        }))}
-      />
-    </Sider>
+    <Menu
+      mode={collapsed ? 'vertical' : 'inline'}
+      selectedKeys={[currentKey]}
+      onClick={handleMenuClick}
+      className={styles.menu}
+      inlineCollapsed={collapsed}
+      items={menuItems.map((item) => ({
+        key: item.key,
+        label: item.label,
+        icon: item.icon,
+      }))}
+    />
   );
 };
 

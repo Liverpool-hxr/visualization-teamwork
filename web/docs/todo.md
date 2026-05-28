@@ -78,16 +78,16 @@
 
 | 序号 | 任务 | 状态 | 优先级 | 依赖 |
 |------|------|------|--------|------|
-| P6-01 | 添加页面切换动画 | ⏳ pending | 中 | P5-01 ~ P5-03 |
-| P6-02 | 添加树节点展开动画 | ⏳ pending | 中 | P3-06 |
+| P6-01 | 添加页面切换动画 | ✅ completed | 中 | P5-01 ~ P5-03 |
+| P6-02 | 添加树节点展开动画 | ✅ completed | 中 | P3-06 |
 | P6-03 | 添加图表加载动画 | ⏳ pending | 中 | P3-09, P4-01 ~ P4-05 |
 | P6-04 | 实现键盘导航功能 | ⏳ pending | 中 | P3-06 |
-| P6-05 | 添加响应式适配 | ⏳ pending | 中 | 所有组件 |
-| P6-06 | 代码分割与懒加载 | ⏳ pending | 高 | P5-01 ~ P5-03 |
-| P6-07 | 性能优化：useMemo/useCallback | ⏳ pending | 中 | 所有组件 |
+| P6-05 | 添加响应式适配 | ✅ completed | 中 | 所有组件 |
+| P6-06 | 代码分割与懒加载 | ✅ completed | 高 | P5-01 ~ P5-03 |
+| P6-07 | 性能优化：useMemo/useCallback | ✅ completed | 中 | 所有组件 |
 | P6-08 | 添加 ARIA 属性支持 | ⏳ pending | 低 | 所有组件 |
-| P6-09 | ESLint 代码检查 | ⏳ pending | 高 | 所有代码 |
-| P6-10 | TypeScript 类型检查 | ⏳ pending | 高 | 所有代码 |
+| P6-09 | ESLint 代码检查 | ✅ completed | 高 | 所有代码 |
+| P6-10 | TypeScript 类型检查 | ✅ completed | 高 | 所有代码 |
 
 ---
 
