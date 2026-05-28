@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { Heatmap } from '@antv/g2plot';
 import type { HeatmapDataPoint, ChartConfig } from '@/types/chart';
 import styles from './index.module.css';
@@ -13,11 +13,30 @@ interface HeatmapChartProps {
 const HeatmapChart: React.FC<HeatmapChartProps> = ({
   data,
   config = {},
-  width = 600,
-  height = 400
+  width,
+  height = 400,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<Heatmap | null>(null);
+  const autoFit = width === undefined;
+  const { minValue, maxValue } = useMemo(() => {
+    if (data.length === 0) {
+      return { minValue: 0, maxValue: 1 };
+    }
+    let min = Number.POSITIVE_INFINITY;
+    let max = Number.NEGATIVE_INFINITY;
+    for (const item of data) {
+      if (item.value < min) min = item.value;
+      if (item.value > max) max = item.value;
+    }
+    if (!Number.isFinite(min) || !Number.isFinite(max)) {
+      return { minValue: 0, maxValue: 1 };
+    }
+    if (min === max) {
+      return { minValue: min, maxValue: min + 1e-6 };
+    }
+    return { minValue: min, maxValue: max };
+  }, [data]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -25,19 +44,16 @@ const HeatmapChart: React.FC<HeatmapChartProps> = ({
 
     if (chartRef.current) {
       try {
-        const chartContainer = (chartRef.current as unknown as { container?: HTMLElement }).container;
-        if (chartContainer && chartContainer.parentNode) {
-          chartRef.current.destroy();
-        }
+        chartRef.current.destroy();
       } catch {
-        // Chart container may already be removed
+        chartRef.current = null;
       }
       chartRef.current = null;
     }
 
     const heatmap = new Heatmap(container, {
       data,
-      width,
+      ...(autoFit ? { autoFit: true } : { width }),
       height,
       xField: 'x',
       yField: 'y',
@@ -46,37 +62,56 @@ const HeatmapChart: React.FC<HeatmapChartProps> = ({
       meta: {
         x: { type: 'cat', alias: config.xAxisLabel || 'X Axis' },
         y: { type: 'cat', alias: config.yAxisLabel || 'Y Axis' },
-        value: { min: 0, max: 1 },
+        value: { min: minValue, max: maxValue },
       },
-      tooltip: config.showTooltip !== false ? {
-        formatter: (datum: unknown) => {
-          const d = datum as HeatmapDataPoint;
-          return {
-            name: `(${d.x}, ${d.y})`,
-            value: d.value.toFixed(4),
-          };
-        },
-      } : undefined,
+      tooltip:
+        config.showTooltip !== false
+          ? {
+              formatter: (datum: unknown) => {
+                const d = datum as HeatmapDataPoint;
+                return {
+                  name: `(${d.x}, ${d.y})`,
+                  value: d.value.toFixed(4),
+                };
+              },
+            }
+          : undefined,
       legend: config.showLegend !== false ? {} : undefined,
     });
 
     heatmap.render();
     chartRef.current = heatmap;
 
+    const observer = autoFit
+      ? new ResizeObserver((entries) => {
+          const entry = entries[0];
+          const nextWidth = entry?.contentRect?.width ?? 0;
+          if (nextWidth <= 0) return;
+          const resizable = chartRef.current as unknown as {
+            changeSize?: (w: number, h?: number) => void;
+          } | null;
+          resizable?.changeSize?.(nextWidth, height);
+        })
+      : null;
+
+    if (observer) {
+      observer.observe(container);
+    }
+
     return () => {
+      if (observer) {
+        observer.disconnect();
+      }
       if (chartRef.current) {
         try {
-          const chartContainer = (chartRef.current as unknown as { container?: HTMLElement }).container;
-          if (chartContainer && chartContainer.parentNode) {
-            chartRef.current.destroy();
-          }
+          chartRef.current.destroy();
         } catch {
-          // DOM may already be unmounted
+          chartRef.current = null;
         }
         chartRef.current = null;
       }
     };
-  }, [data, config, width, height]);
+  }, [data, config, width, height, autoFit, minValue, maxValue]);
 
   return (
     <div className={styles.chartContainer}>

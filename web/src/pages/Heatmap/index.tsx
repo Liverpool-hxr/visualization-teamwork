@@ -1,14 +1,17 @@
 import React from 'react';
-import { Row, Col, Card } from 'antd';
+import { Row, Col, Card, Button } from 'antd';
 import HeatmapChart from '@/components/charts/HeatmapChart';
 import AttentionTree from '@/components/tree/AttentionTree';
 import ImageUpload from '@/components/upload/ImageUpload';
-import { useTreeStats, useKLLocality } from '@/hooks/useMockData';
+import { useTreeStats, useKLLocality, useVisualizeImageUrl } from '@/hooks/useMockData';
 import Loading from '@/components/common/Loading';
+import styles from './index.module.css';
 
 const Heatmap: React.FC = () => {
   const { data: treeStats, loading: treeLoading } = useTreeStats();
   const { data: klLocality, loading: klLoading } = useKLLocality();
+  const { data: visualizeImageUrl, loading: visualizeLoading } = useVisualizeImageUrl();
+  const [imageUrl, setImageUrl] = React.useState<string | null>(null);
 
   const heatmapData = React.useMemo(() => {
     if (!klLocality) return [];
@@ -30,11 +33,32 @@ const Heatmap: React.FC = () => {
   }
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div className={styles.page}>
       <Row gutter={16}>
         <Col span={12}>
-          <Card title="Image Upload" style={{ marginBottom: 16 }}>
-            <ImageUpload />
+          <Card
+            title="Image Upload"
+            className={styles.uploadCard}
+            extra={
+              <Button
+                onClick={() => {
+                  if (visualizeImageUrl) {
+                    setImageUrl(visualizeImageUrl);
+                  }
+                }}
+                disabled={visualizeLoading || !visualizeImageUrl}
+              >
+                使用示例图片
+              </Button>
+            }
+          >
+            <ImageUpload
+              value={imageUrl}
+              onChange={(next, file) => {
+                void file;
+                setImageUrl(next);
+              }}
+            />
           </Card>
         </Col>
         <Col span={12}>
@@ -53,7 +77,6 @@ const Heatmap: React.FC = () => {
                 xAxisLabel: 'Layer',
                 yAxisLabel: 'Head',
               }}
-              width={800}
               height={400}
             />
           </Card>

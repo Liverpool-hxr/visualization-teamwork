@@ -6,30 +6,43 @@ import XIcon from '@ant-design/icons/CloseOutlined';
 import styles from './index.module.css';
 
 interface ImageUploadProps {
+  value?: string | null;
+  onChange?: (value: string | null, file?: File) => void;
   onImageSelect?: (file: File) => void;
   disabled?: boolean;
   accept?: string;
 }
 
-const ImageUpload: React.FC<ImageUploadProps> = ({ 
-  onImageSelect, 
+const ImageUpload: React.FC<ImageUploadProps> = ({
+  value,
+  onChange,
+  onImageSelect,
   disabled = false,
-  accept = 'image/*' 
+  accept = 'image/*',
 }) => {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const isControlled = value !== undefined;
+  const currentPreview = isControlled ? value : previewImage;
+  const effectiveFileList = isControlled ? [] : fileList;
 
   const handleUpload = (file: File) => {
     const reader = new FileReader();
     reader.onload = (e) => {
-      const result = e.target?.result as string;
-      setPreviewImage(result);
-      setFileList([{
-        uid: Math.random().toString(36).substr(2, 9),
-        name: file.name,
-        status: 'done',
-        url: result,
-      }]);
+      const result = typeof e.target?.result === 'string' ? e.target.result : null;
+      if (!result) return;
+      onChange?.(result, file);
+      if (!isControlled) {
+        setPreviewImage(result);
+      }
+      setFileList([
+        {
+          uid: Math.random().toString(36).substring(2, 11),
+          name: file.name,
+          status: 'done',
+          url: result,
+        },
+      ]);
       onImageSelect?.(file);
     };
     reader.readAsDataURL(file);
@@ -38,17 +51,20 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   };
 
   const handleRemove = () => {
-    setPreviewImage(null);
+    onChange?.(null);
+    if (!isControlled) {
+      setPreviewImage(null);
+    }
     setFileList([]);
     message.info('图片已移除');
   };
 
   return (
     <div className={styles.container}>
-      {previewImage ? (
+      {currentPreview ? (
         <div className={styles.previewWrapper}>
           <Image
-            src={previewImage}
+            src={currentPreview}
             alt="预览图"
             className={styles.previewImage}
             preview={false}
@@ -64,7 +80,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       ) : (
         <Upload
           accept={accept}
-          fileList={fileList}
+          fileList={effectiveFileList}
           beforeUpload={handleUpload}
           listType="picture-card"
           disabled={disabled}

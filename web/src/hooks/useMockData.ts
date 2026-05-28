@@ -3,7 +3,22 @@ import { mockService } from '@/services/mockService';
 import type { AttentionTreeData } from '@/types/attention';
 import type { KLLocalityData, FunnelData } from '@/types/chart';
 
-export type DataType = 'treeStats' | 'klLocality' | 'funnel' | 'all';
+export interface AllMockData {
+  treeStats: AttentionTreeData;
+  klLocality: KLLocalityData;
+  funnel: FunnelData;
+  visualizeImageUrl: string;
+}
+
+export interface MockDataMap {
+  treeStats: AttentionTreeData;
+  klLocality: KLLocalityData;
+  funnel: FunnelData;
+  visualizeImageUrl: string;
+  all: AllMockData;
+}
+
+export type DataType = keyof MockDataMap;
 
 export interface UseMockDataResult<T = unknown> {
   data: T | null;
@@ -12,21 +27,21 @@ export interface UseMockDataResult<T = unknown> {
   refetch: () => void;
 }
 
-const fetchDataMap = {
+const fetchDataMap: { [K in DataType]: () => Promise<MockDataMap[K]> } = {
   treeStats: () => mockService.getTreeStats(),
   klLocality: () => mockService.getKLLocality(),
   funnel: () => mockService.getFunnel(),
+  visualizeImageUrl: () => mockService.getVisualizeImageUrl(),
   all: () => mockService.getAllData(),
 };
 
-export const useMockData = <T = unknown>(dataType: DataType): UseMockDataResult<T> => {
-  const [data, setData] = useState<T | null>(null);
+export const useMockData = <K extends DataType>(dataType: K): UseMockDataResult<MockDataMap[K]> => {
+  const [data, setData] = useState<MockDataMap[K] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
-    const result = await fetchDataMap[dataType]();
-    return result as T;
+    return fetchDataMap[dataType]();
   }, [dataType]);
 
   useEffect(() => {
@@ -68,15 +83,19 @@ export const useMockData = <T = unknown>(dataType: DataType): UseMockDataResult<
 };
 
 export const useTreeStats = (): UseMockDataResult<AttentionTreeData> => {
-  return useMockData<AttentionTreeData>('treeStats');
+  return useMockData('treeStats');
 };
 
 export const useKLLocality = (): UseMockDataResult<KLLocalityData> => {
-  return useMockData<KLLocalityData>('klLocality');
+  return useMockData('klLocality');
 };
 
 export const useFunnel = (): UseMockDataResult<FunnelData> => {
-  return useMockData<FunnelData>('funnel');
+  return useMockData('funnel');
+};
+
+export const useVisualizeImageUrl = (): UseMockDataResult<string> => {
+  return useMockData('visualizeImageUrl');
 };
 
 export default useMockData;
