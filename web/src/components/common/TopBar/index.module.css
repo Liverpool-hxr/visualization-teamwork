@@ -1,0 +1,42 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  background: #161b22;
+  border-bottom: 1px solid #30363d;
+  height: 64px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logoIcon {
+  font-size: 24px;
+  color: #00d4aa;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #e8edf5;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.userIcon {
+  font-size: 20px;
+  color: #8b949e;
+}
+
+.userName {
+  font-size: 14px;
+  color: #8b949e;
+}

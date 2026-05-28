@@ -1,0 +1,13 @@
+.layout {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #0d1117;
+}
+
+.content {
+  flex: 1;
+  padding: 24px;
+  overflow: auto;
+  background: #0d1117;
+}
