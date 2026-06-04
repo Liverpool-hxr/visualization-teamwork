@@ -253,11 +253,6 @@ export const InspectorProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       }
     };
 
-    // Reference the current state via closure - these functions need to close over
-    // the attnData/attnShape from when they're called, not from creation time.
-    // We use a mutable ref pattern.
-    const stateRef = { current: state };
-
     return {
       setStatus: (status) => dispatch({ type: 'setStatus', status }),
       pushLog: (level, message) =>

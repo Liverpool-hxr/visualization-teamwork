@@ -13,7 +13,7 @@ interface ThreeDBarChartProps {
 
 interface ChartDatum {
   layer: number;
-  metric: 'row_var_rel' | 'sparsity_rel' | 'gini_rel';
+  metric: 'row_var_rel' | 'sparsity_rel';
   value: number;
 }
 
@@ -47,7 +47,6 @@ const ThreeDBarChart: React.FC<ThreeDBarChartProps> = ({
     const chartData: ChartDatum[] = data.layers.flatMap((layer) => ([
       { layer: layer.layer, metric: 'row_var_rel', value: layer.row_var_rel },
       { layer: layer.layer, metric: 'sparsity_rel', value: layer.sparsity_rel },
-      { layer: layer.layer, metric: 'gini_rel', value: layer.gini_rel },
     ]));
 
     const values = chartData.map((d) => d.value);
@@ -70,7 +69,6 @@ const ThreeDBarChart: React.FC<ThreeDBarChartProps> = ({
           formatter: (v: string) => {
             if (v === 'row_var_rel') return 'row_var';
             if (v === 'sparsity_rel') return 'sparsity';
-            if (v === 'gini_rel') return 'gini';
             return v;
           },
         },

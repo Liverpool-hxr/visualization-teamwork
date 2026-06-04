@@ -5,7 +5,6 @@
 import { load as npyLoad } from 'npyjs';
 import {
   NUM_PATCHES,
-  PATCH_SIZE,
   meanEntropy,
   klUniform,
   localityScore,
@@ -101,24 +100,6 @@ export function getAttnMatrix(
   const dst = new Float64Array(numPatches * numPatches);
   dst.set(src);
   return dst;
-}
-
-/* ── Iterate over all layers/heads ──────────────────────────── */
-
-function forEachHead(
-  data: Float32Array,
-  shape: number[],
-  numLayers: number,
-  numHeads: number,
-  numPatches: number,
-  fn: (layerIdx: number, headIdx: number, mat: Float64Array, n: number) => void,
-): void {
-  for (let l = 0; l < numLayers; l++) {
-    for (let h = 0; h < numHeads; h++) {
-      const mat = getAttnMatrix(data, shape, numPatches, l, h);
-      fn(l, h, mat, numPatches);
-    }
-  }
 }
 
 /* ── Compute tree_stats ─────────────────────────────────────── */
