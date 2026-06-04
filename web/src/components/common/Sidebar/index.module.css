@@ -1,0 +1,36 @@
+.sider {
+  background: #161b22;
+  border-right: 1px solid #30363d;
+  flex-shrink: 0;
+}
+
+.menu {
+  padding: 16px 0;
+  border-radius: 0;
+}
+
+.menu :global(.ant-menu-item) {
+  margin: 4px 8px;
+  border-radius: 8px;
+  color: #8b949e;
+  transition: all 0.2s ease;
+}
+
+.menu :global(.ant-menu-item:hover) {
+  background: #21262d;
+  color: #e8edf5;
+}
+
+.menu :global(.ant-menu-item-selected) {
+  background: #00d4aa15 !important;
+  color: #00d4aa !important;
+}
+
+.menu :global(.ant-menu-item-icon) {
+  font-size: 16px;
+}
+
+.menu :global(.ant-menu-title-content) {
+  font-size: 14px;
+  font-weight: 500;
+}

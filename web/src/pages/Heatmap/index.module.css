@@ -1,0 +1,177 @@
+.root {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: #080b10;
+}
+
+.header {
+  padding: 8px 20px;
+  border-bottom: 1px solid #1f2d42;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  background: #0d1117;
+}
+
+.title {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
+  color: #8fa3bf;
+}
+
+.badges {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.badge {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 10px;
+  padding: 3px 9px;
+  border-radius: 12px;
+  background: #1a2233;
+  border: 1px solid #263347;
+  color: #4da6ff;
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 24px 12px;
+  gap: 12px;
+}
+
+.img {
+  max-width: 100%;
+  max-height: 340px;
+  border-radius: 6px;
+  border: 1px solid #1f2d42;
+  background: #0d1117;
+}
+
+.emptySection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #4a6080;
+  text-align: center;
+  padding: 24px 24px;
+}
+
+.emptyIcon {
+  font-size: 32px;
+  opacity: 0.2;
+}
+
+.emptySection h3 {
+  font-size: 14px;
+  color: #8fa3bf;
+  font-weight: 400;
+  margin: 0;
+}
+
+.emptySection p {
+  font-size: 10px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── Head similarity ── */
+
+.similaritySection {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  background: #0d1117;
+  border: 1px solid #1f2d42;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.simHeader {
+  padding: 6px 12px;
+  border-bottom: 1px solid #1f2d42;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.simTitle {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 10px;
+  color: #8fa3bf;
+}
+
+.simLoadBtn {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 10px;
+  padding: 4px 12px;
+  border-radius: 4px;
+  background: #1a2233;
+  border: 1px solid #263347;
+  color: #8fa3bf;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-left: auto;
+}
+
+.simLoadBtn:hover:not(:disabled) {
+  border-color: #00d4aa;
+  color: #00d4aa;
+}
+
+.simLoadBtn:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+.simSelect {
+  margin-left: auto;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: #1a2233;
+  border: 1px solid #263347;
+  color: #8fa3bf;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 10px;
+  cursor: pointer;
+  outline: none;
+}
+
+.simSelect:focus {
+  border-color: #00d4aa;
+}
+
+.simLabel {
+  margin-left: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 11px;
+  color: #00d4aa;
+}
+
+.simBody {
+  padding: 8px;
+}
+
+.simChart {
+  width: 100%;
+  height: 440px;
+}
+
+.simPlaceholder {
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4a6080;
+  font-size: 11px;
+}

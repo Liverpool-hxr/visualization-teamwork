@@ -1,0 +1,69 @@
+.layout {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #0d1117;
+}
+
+.content {
+  flex: 1;
+  padding: 24px;
+  overflow: auto;
+  background: #0d1117;
+  transition: margin-left 0.3s ease;
+}
+
+.sider {
+  flex-shrink: 0;
+  transition: width 0.3s ease;
+}
+
+.mobileSidebarOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+}
+
+.mobileSider {
+  height: 100%;
+  animation: slideIn 0.3s ease-out;
+}
+
+.closeButton {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  color: #fff;
+  background: transparent;
+  border: none;
+}
+
+.closeButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .content {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: 12px;
+  }
+}

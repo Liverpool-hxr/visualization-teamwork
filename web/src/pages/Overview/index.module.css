@@ -1,0 +1,120 @@
+.root {
+  height: 100%;
+  overflow-y: auto;
+  padding: 32px 40px;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.h1 {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 22px;
+  color: #e8edf5;
+  margin-bottom: 6px;
+}
+
+.h1 span {
+  color: #00d4aa;
+}
+
+.sub {
+  color: #4a6080;
+  font-size: 12px;
+  margin-bottom: 32px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.card {
+  background: #131921;
+  border: 1px solid #1f2d42;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.cardLabel {
+  font-size: 11px;
+  color: #4a6080;
+  margin-bottom: 6px;
+}
+
+.cardVal {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 20px;
+  color: #00d4aa;
+}
+
+.secondary {
+  color: #4da6ff;
+}
+
+.tertiary {
+  color: #b48eff;
+}
+
+.sectionTitle {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #4a6080;
+  margin-bottom: 12px;
+  margin-top: 28px;
+}
+
+.sectionTitle:first-of-type {
+  margin-top: 0;
+}
+
+.routeLabel {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #4a6080;
+  margin-bottom: 12px;
+}
+
+.routes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.routeRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #131921;
+  border: 1px solid #1f2d42;
+  border-radius: 6px;
+  padding: 10px 14px;
+}
+
+.methodOk {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  background: rgba(0, 212, 170, 0.15);
+  color: #00d4aa;
+  flex-shrink: 0;
+}
+
+.path {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 11px;
+  color: #4da6ff;
+  flex-shrink: 0;
+}
+
+.desc {
+  font-size: 11px;
+  color: #8fa3bf;
+}

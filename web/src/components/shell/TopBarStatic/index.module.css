@@ -1,0 +1,163 @@
+.topbar {
+  height: 48px;
+  background: #0d1117;
+  border-bottom: 1px solid #1f2d42;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 50;
+}
+
+.logo {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #00d4aa;
+  color: #080b10;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+}
+
+.title {
+  padding: 0 20px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  border-right: 1px solid #1f2d42;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
+  color: #8fa3bf;
+  letter-spacing: 0.08em;
+}
+
+.title strong {
+  color: #e8edf5;
+  margin-right: 6px;
+}
+
+.tabs {
+  display: flex;
+  height: 100%;
+  border-right: 1px solid #1f2d42;
+}
+
+.tab {
+  height: 100%;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: #4a6080;
+  cursor: pointer;
+  border: none;
+  background: none;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+
+.tab:hover {
+  color: #8fa3bf;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.active {
+  color: #00d4aa;
+  border-bottom-color: #00d4aa;
+  background: rgba(0, 212, 170, 0.05);
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4a6080;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.active .dot {
+  background: #00d4aa;
+  box-shadow: 0 0 6px #00d4aa;
+}
+
+.right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+}
+
+.statusChip {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 10px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid #263347;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.3s;
+  color: #8fa3bf;
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4a6080;
+}
+
+.idle {
+  border-color: #263347;
+}
+
+.busy {
+  border-color: #f0b429;
+  color: #f0b429;
+}
+
+.busy .statusDot {
+  background: #f0b429;
+  animation: blink 1s infinite;
+}
+
+.ready {
+  border-color: #00d4aa;
+  color: #00d4aa;
+}
+
+.ready .statusDot {
+  background: #00d4aa;
+  box-shadow: 0 0 6px #00d4aa;
+}
+
+.error {
+  border-color: #ff5f57;
+  color: #ff5f57;
+}
+
+.error .statusDot {
+  background: #ff5f57;
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+

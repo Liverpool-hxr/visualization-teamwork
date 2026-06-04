@@ -1,0 +1,256 @@
+.root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.section {
+  padding: 14px 16px;
+  border-bottom: 1px solid #1f2d42;
+}
+
+.sectionGrow {
+  flex: 1;
+  padding: 10px 12px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.label {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #4a6080;
+  margin-bottom: 10px;
+}
+
+.dropzone {
+  border: 1px dashed #263347;
+  border-radius: 6px;
+  padding: 14px 12px;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.dropzone:hover,
+.over {
+  border-color: #00d4aa;
+  background: rgba(0, 212, 170, 0.04);
+}
+
+.dropzone strong {
+  font-size: 12px;
+  color: #8fa3bf;
+}
+
+.dropzone p {
+  font-size: 11px;
+  color: #4a6080;
+  margin-top: 4px;
+}
+
+.fileInput {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.caseSelector {
+  margin-bottom: 10px;
+}
+
+.caseSelect {
+  width: 100%;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 5px;
+  background: #1a2233;
+  border: 1px solid #263347;
+  color: #e8edf5;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 11px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234a6080'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+
+.caseSelect:hover {
+  border-color: #00d4aa;
+}
+
+.caseSelect:focus {
+  border-color: #00d4aa;
+}
+
+.caseSelect:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+.caseSelect option {
+  background: #0d1117;
+  color: #e8edf5;
+}
+
+.previewWrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.previewImg {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #263347;
+}
+
+.previewMeta {
+  text-align: left;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 10px;
+  color: #8fa3bf;
+}
+
+.previewName {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 170px;
+}
+
+.previewSize {
+  color: #4a6080;
+  margin-top: 2px;
+}
+
+.runBtn {
+  width: 100%;
+  margin-top: 10px;
+  height: 36px;
+  border-radius: 5px;
+  background: #00d4aa;
+  color: #080b10;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.runBtn:hover:not(:disabled) {
+  background: #00a882;
+}
+
+.runBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.secondaryBtn {
+  width: 100%;
+  margin-top: 8px;
+  height: 32px;
+  border-radius: 5px;
+  background: #1a2233;
+  color: #8fa3bf;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  border: 1px solid #263347;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.secondaryBtn:hover:not(:disabled) {
+  border-color: #00d4aa;
+  color: #00d4aa;
+}
+
+.secondaryBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.legendBar {
+  flex: 1;
+  height: 8px;
+  border-radius: 3px;
+  background: linear-gradient(to right, #ff4757, #ffa502, #2ed573);
+}
+
+.legendLabels {
+  display: flex;
+  justify-content: space-between;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 9px;
+  color: #4a6080;
+  margin-top: 4px;
+}
+
+.treeWrap {
+  height: 100%;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.treeEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 160px;
+  gap: 8px;
+  color: #4a6080;
+  font-size: 12px;
+  text-align: center;
+}
+
+.treeEmptyIcon {
+  font-size: 32px;
+  opacity: 0.25;
+}
+
+.logBar {
+  border-top: 1px solid #1f2d42;
+  height: 80px;
+  overflow-y: auto;
+  padding: 6px 12px;
+  flex-shrink: 0;
+}
+
+.logLine {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 10px;
+  line-height: 1.7;
+  color: #4a6080;
+}
+
+.logOk {
+  color: #00d4aa;
+}
+
+.logWarn {
+  color: #f0b429;
+}
+
+.logErr {
+  color: #ff5f57;
+}
